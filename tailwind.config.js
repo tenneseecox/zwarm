@@ -124,31 +124,11 @@ module.exports = {
             transform: 'translateY(-12px)',
           },
         },
-        float: {
-          "0%, 100%": {
-            transform: "translateY(0px) rotate(0deg)",
-            opacity: "0.08",
-          },
-          "25%": {
-            transform: "translateY(-10px) rotate(2deg)",
-            opacity: "0.12",
-          },
-          "50%": {
-            transform: "translateY(-20px) rotate(0deg)",
-            opacity: "0.15",
-          },
-          "75%": {
-            transform: "translateY(-10px) rotate(-2deg)",
-            opacity: "0.12",
-          },
-        },
+       
       },
       animation: {
         fadeInUp: 'fadeInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1)',
         bounce: 'bounce 2.2s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55)',
-       float: "float 6s ease-in-out infinite",
-        "float-slow": "float 8s ease-in-out infinite",
-        "float-fast": "float 4s ease-in-out infinite",
       },
     },
   },
