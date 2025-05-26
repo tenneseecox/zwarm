@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Zwarm Color Variables */
+    --zwarm-yellow: #FFD600;
+    --zwarm-yellow-glow: #FFED4E;
+    --zwarm-yellow-dark: #FFB800;
+    --zwarm-black: #0A0A0A;
+    --zwarm-gray-900: #111111;
+    --zwarm-gray-800: #1A1A1A;
+    --zwarm-gray-700: #2A2A2A;
+    --zwarm-gray-600: #3A3A3A;
+    --zwarm-gray-400: #6B7280;
+    --zwarm-white: #FFFFFF;
+    --zwarm-blue: #60A5FA;
+    --zwarm-blue-glow: #93C5FD;
+
+    /* Zwarm Design Tokens */
+    --zwarm-radius: 20px;
+    --zwarm-radius-sm: 12px;
+    --zwarm-radius-lg: 28px;
+    --zwarm-shadow-dark: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --zwarm-shadow-glow: 0 0 20px 0 rgba(255, 214, 0, 0.15);
+    --zwarm-glass-dark: rgba(26, 26, 26, 0.8);
+    --zwarm-glass-blur: blur(16px);
+
+    /* Typography Scale */
+    --zwarm-text-xs: 0.75rem;
+    --zwarm-text-sm: 0.875rem;
+    --zwarm-text-base: 1rem;
+    --zwarm-text-lg: 1.125rem;
+    --zwarm-text-xl: 1.25rem;
+    --zwarm-text-2xl: 1.5rem;
+    --zwarm-text-3xl: 1.875rem;
+    --zwarm-text-4xl: 2.25rem;
+    --zwarm-text-5xl: 3rem;
+    --zwarm-text-6xl: 3.75rem;
+  }
+
+  /* Dark theme base styles */
+  html {
+    background: radial-gradient(ellipse at top, var(--zwarm-gray-900) 0%, var(--zwarm-black) 70%);
+    min-height: 100vh;
+  }
+
+  body {
+    @apply text-white antialiased;
+    background: transparent;
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--zwarm-gray-900);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--zwarm-gray-700);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--zwarm-yellow);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+
+  /* Glassmorphism utility */
+  .glass-dark {
+    background: var(--zwarm-glass-dark);
+    backdrop-filter: var(--zwarm-glass-blur);
+    border: 1px solid var(--zwarm-gray-700);
+  }
+
+  /* Glow effects */
+  .glow-yellow {
+    box-shadow: var(--zwarm-shadow-glow);
+  }
+
+  .glow-yellow-strong {
+    box-shadow: 0 0 30px var(--zwarm-yellow);
+  }
+
+  /* Text glow */
+  .text-glow-yellow {
+    text-shadow: 0 0 8px var(--zwarm-yellow);
+  }
+
+  .text-glow-white {
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  }
 }
