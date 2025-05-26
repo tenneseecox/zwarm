@@ -8,7 +8,7 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="glass-dark rounded-b-[var(--zwarm-radius)] p-8 relative z-20">
+    <header className="glass-dark rounded-b-[var(--zwarm-radius)] p-4 relative z-20">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="w-12 h-12 bg-[var(--zwarm-yellow)] rounded-full flex items-center justify-center text-3xl shadow-[var(--zwarm-shadow-glow)] border-3 border-[#fffbe6] transition-transform group-hover:rotate-[-10deg] group-hover:scale-110">
@@ -22,7 +22,7 @@ export function Header() {
             href="/" 
             className={`text-lg font-bold transition-colors ${
               pathname === "/" 
-                ? "text-[var(--zwarm-blue)] border-b-2 border-[var(--zwarm-blue)]" 
+                ? "text-[var(--zwarm-yellow)] text-glow-yellow border-b-2 border-[var(--zwarm-yellow)]" 
                 : "text-white hover:text-[var(--zwarm-yellow)]"
             }`}
           >
@@ -32,7 +32,7 @@ export function Header() {
             href="/missions" 
             className={`text-lg font-bold transition-colors ${
               pathname === "/missions" 
-                ? "text-[var(--zwarm-blue)] border-b-2 border-[var(--zwarm-blue)]" 
+                ? "text-[var(--zwarm-yellow)] text-glow-yellow border-b-2 border-[var(--zwarm-yellow)]" 
                 : "text-white hover:text-[var(--zwarm-yellow)]"
             }`}
           >
