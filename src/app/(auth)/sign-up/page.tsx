@@ -31,90 +31,75 @@ export default function SignUp() {
   };
 
 const handleSignUp = async () => {
-  console.log("[DEBUG] handleSignUp started"); // <<< ADD THIS
-
   if (!email || !password || !username) {
-    console.log("[DEBUG] Validation failed: missing fields"); // <<< ADD THIS
     toast.error("Please fill in all required fields (email, password, username).");
     return;
   }
   if (password.length < 6) {
-    console.log("[DEBUG] Validation failed: password too short"); // <<< ADD THIS
     toast.error("Password must be at least 6 characters long.");
     return;
   }
 
   setIsLoading(true);
-  const supabase = createClient(); // Assuming createClient is correct
-  console.log("[DEBUG] Supabase client initialized:", supabase ? "OK" : "Failed or null"); // <<< ADD THIS
+  const supabase = createClient();
 
   try {
-    console.log("[DEBUG] Attempting username check for:", username); // <<< ADD THIS
+    // Check username availability
     const { data: existingUserByUsername, error: usernameCheckError } = await supabase
       .from('User')
       .select('username')
       .eq('username', username)
       .maybeSingle();
 
-    console.log("[DEBUG] Username check result:", { existingUserByUsername, usernameCheckError }); // <<< ADD THIS
-
     if (usernameCheckError && usernameCheckError.code !== 'PGRST116') {
-      console.error("[DEBUG] Error during username check:", usernameCheckError); // <<< ADD THIS
-      toast.error("Error checking username: " + usernameCheckError.message);
-      setIsLoading(false);
+      console.error("Username check error:", usernameCheckError);
+      toast.error("Error checking username availability");
       return;
     }
 
     if (existingUserByUsername) {
-      console.log("[DEBUG] Username taken:", username); // <<< ADD THIS
       toast.error("Username is already taken. Please choose another.");
-      setIsLoading(false);
       return;
     }
 
-    console.log("[DEBUG] Data being sent to Supabase Auth options.data:", {
-  username: username, // The state variable from your form
-  emoji: selectedEmoji // The state variable from your form
-});
-
-const { data: authData, error: signUpError } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    emailRedirectTo: `${window.location.origin}/auth/callback`,
-    data: { // ENSURE THIS BLOCK IS NOT COMMENTED OUT
+    // Prepare metadata for the trigger
+    const userMetadata = {
       username: username,
       emoji: selectedEmoji
-    }
-  },
-});
+    };
 
-    console.log("[DEBUG] supabase.auth.signUp result:", { authData, signUpError }); // <<< ADD THIS
+    console.log("Attempting sign up with metadata:", userMetadata);
+
+    // Create the user in Supabase Auth
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/callback`,
+        data: userMetadata
+      },
+    });
 
     if (signUpError) {
-      console.error("[DEBUG] SignUp error from Supabase Auth:", signUpError); // <<< ADD THIS
+      console.error("Sign up error:", signUpError);
       toast.error(signUpError.message);
-      // setIsLoading(false); // Already handled in finally
-      return; // Return here after error
+      return;
     }
 
-    if (authData?.user) {
-      console.log("[DEBUG] Sign-up successful, user object present:", authData.user); // <<< ADD THIS
-      toast.success("Sign-up successful! Check your email for the confirmation link.");
-      router.push("/sign-in");
-    } else {
-      // This case might indicate an issue or a specific Supabase configuration
-      console.warn("[DEBUG] Sign-up response from Supabase Auth did not contain expected user data, or session:", authData);
-      toast.info("Sign up request processed. Check email if confirmation is required.");
-       router.push("/sign-in"); // Or handle differently
+    if (!authData?.user) {
+      console.error("No user data returned from sign up");
+      toast.error("Failed to create account. Please try again.");
+      return;
     }
+
+    toast.success("Sign-up successful! Check your email for the confirmation link.");
+    router.push("/sign-in");
 
   } catch (err: unknown) {
-    console.error("[DEBUG] CRITICAL ERROR in handleSignUp try/catch block:", err);
+    console.error("Sign up error:", err);
     toast.error(err instanceof Error ? err.message : "An unexpected error occurred during sign up.");
   } finally {
     setIsLoading(false);
-    console.log("[DEBUG] handleSignUp finished"); // <<< ADD THIS
   }
 };
 

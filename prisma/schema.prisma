@@ -23,10 +23,10 @@ enum MissionStatus {
 model User {
   id        String   @id // This should be the UUID from supabase.auth.users.id
   email     String  @unique
-  username  String  @unique 
+  username  String?  @unique 
   emoji     String?  
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // Mission Model
