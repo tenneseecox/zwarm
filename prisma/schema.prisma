@@ -1,0 +1,43 @@
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // This will come from your Supabase project settings
+  directUrl = env("DIRECT_URL")   // Also from Supabase, for migrations
+}
+
+
+// Enum for Mission Status
+enum MissionStatus {
+  OPEN        // Mission is open and accepting participants/contributions
+  IN_PROGRESS // Mission is actively being worked on
+  COMPLETED   // Mission has been successfully completed
+  ARCHIVED    // Mission is no longer active but kept for records
+}
+
+// User Model
+model User {
+  id        String   @id // This should be the UUID from supabase.auth.users.id
+  email     String  @unique
+  username  String  @unique 
+  emoji     String?  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Mission Model
+model Mission {
+  id          String        @id @default(uuid()) // Auto-generated UUID for each mission
+  title       String
+  description String        @db.Text // Use Text for potentially long descriptions
+  emoji       String?       // The emoji representing the mission
+  status      MissionStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+
