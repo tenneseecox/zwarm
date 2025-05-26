@@ -25,17 +25,6 @@
     --zwarm-glass-dark: rgba(26, 26, 26, 0.8);
     --zwarm-glass-blur: blur(16px);
 
-    /* Typography Scale */
-    --zwarm-text-xs: 0.75rem;
-    --zwarm-text-sm: 0.875rem;
-    --zwarm-text-base: 1rem;
-    --zwarm-text-lg: 1.125rem;
-    --zwarm-text-xl: 1.25rem;
-    --zwarm-text-2xl: 1.5rem;
-    --zwarm-text-3xl: 1.875rem;
-    --zwarm-text-4xl: 2.25rem;
-    --zwarm-text-5xl: 3rem;
-    --zwarm-text-6xl: 3.75rem;
   }
 
   /* Dark theme base styles */

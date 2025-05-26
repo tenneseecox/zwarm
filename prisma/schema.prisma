@@ -27,6 +27,8 @@ model User {
   emoji     String?  
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+    ownedMissions Mission[] @relation("MissionOwner") 
 }
 
 // Mission Model
@@ -38,6 +40,12 @@ model Mission {
   status      MissionStatus @default(OPEN)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  ownerId     String                         // Foreign key
+  owner       User    @relation("MissionOwner", fields: [ownerId], references: [id])
+
+
+  @@index([ownerId]) 
 }
 
 
