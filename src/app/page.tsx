@@ -4,107 +4,56 @@ import { Header } from "@/components/Header";
 import { SwarmBackground } from "@/components/SwarmBackground";
 import { Suspense } from "react";
 
+interface MissionOwner {
+  id: string;
+  username: string | null;
+  emoji: string | null;
+}
+
+interface Mission {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: MissionOwner;
+  tags: string[];
+  _count: {
+    participants: number;
+  };
+}
+
 // Server Component for mission data
 async function getTrendingMissions() {
-  return   [
-    {
-      id: "1",
-      emoji: "🔍",
-      title: "Open Source AI Detector",
-      description: "Build a free tool to spot AI-generated images and text. Designers, coders, and activists welcome!",
-      contributors: 18,
-      timeAgo: "2d"
-    },
-    {
-      id: "2",
-      emoji: "🎨",
-      title: "Public Domain Art Archive",
-      description: "Crowdsource a database of public domain art for everyone to use and remix.",
-      contributors: 12,
-      timeAgo: "1d"
-    },
-    {
-      id: "3",
-      emoji: "🌱",
-      title: "Green City Map",
-      description: "Map every public park and green space in your city, together.",
-      contributors: 9,
-      timeAgo: "3d"
-    },
-    {
-      id: "4",
-      emoji: "🧠",
-      title: "Open Source Brainstorm",
-      description: "Collaborate on wild new ideas for open source projects. Anything goes!",
-      contributors: 22,
-      timeAgo: "5h"
-    },
-    {
-      id: "5",
-      emoji: "📚",
-      title: "Collaborative E-Book Library",
-      description: "Create and curate a collection of open-source and public domain e-books.",
-      contributors: 15,
-      timeAgo: "1d"
-    },
-    {
-      id: "6",
-      emoji: "🎶",
-      title: "Open Music Remix Platform",
-      description: "Build a platform for remixing and sharing open-license music tracks.",
-      contributors: 8,
-      timeAgo: "2d"
-    },
-    {
-      id: "7",
-      emoji: "💡",
-      title: "DIY Project Hub",
-      description: "Share and document open-source hardware and DIY projects.",
-      contributors: 10,
-      timeAgo: "3d"
-    },
-    {
-      id: "8",
-      emoji: "📝",
-      title: "Community Writing Project",
-      description: "Collaboratively write stories, articles, or documentation on a chosen topic.",
-      contributors: 14,
-      timeAgo: "6h"
-    },
-    {
-      id: "9",
-      emoji: "🌍",
-      title: "Citizen Science Data Collection",
-      description: "Develop tools and protocols for crowdsourcing scientific data.",
-      contributors: 11,
-      timeAgo: "4d"
-    },
-    {
-      id: "10",
-      emoji: "🎮",
-      title: "Open Source Game Development",
-      description: "Team up to build a new open-source video game from scratch.",
-      contributors: 25,
-      timeAgo: "8h"
-    },
-    {
-      id: "11",
-      emoji: "🛠️",
-      title: "Open Hardware Designs",
-      description: "Share and iterate on designs for open-source physical objects and tools.",
-      contributors: 7,
-      timeAgo: "2d"
-    },
-    {
-      id: "12",
-      emoji: "💬",
-      title: "Language Learning Exchange",
-      description: "Create a platform for language learners to connect and practice with native speakers.",
-      contributors: 19,
-      timeAgo: "1d"
-    }
-  ];
+  try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const response = await fetch(`${siteUrl}/api/missions`, {
+      cache: 'no-store',
+    });
 
+    if (!response.ok) {
+      console.error("Failed to fetch missions:", response.status);
+      return [];
+    }
+
+    const missions = await response.json() as Mission[];
+    return missions.map((mission) => ({
+      id: mission.id,
+      emoji: mission.emoji || '🎯',
+      title: mission.title,
+      description: mission.description,
+      contributors: mission._count?.participants || 0,
+      timeAgo: new Date(mission.createdAt).toLocaleDateString(),
+      owner: mission.owner,
+      tags: mission.tags || [],
+      status: mission.status
+    }));
+  } catch (error) {
+    console.error("Error fetching missions:", error);
+    return [];
+  }
 }
 
 export default async function Home() {
