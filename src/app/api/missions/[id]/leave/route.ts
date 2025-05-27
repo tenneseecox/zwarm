@@ -1,7 +1,7 @@
 // src/app/api/missions/[id]/leave/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Adjust path
+import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 
 export async function POST(
   request: NextRequest,
@@ -14,12 +14,24 @@ export async function POST(
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const missionId = context.params.id;
+  const params = await context.params;
+  const missionId = params.id;
+
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
   }
 
   try {
+    // Check if mission exists
+    const mission = await prisma.mission.findUnique({
+      where: { id: missionId },
+    });
+
+    if (!mission) {
+      return NextResponse.json({ error: 'Mission not found.' }, { status: 404 });
+    }
+
+    // Check if user is a participant
     const existingParticipation = await prisma.missionParticipant.findUnique({
       where: { missionId_userId: { missionId, userId: user.id } },
     });
@@ -28,6 +40,7 @@ export async function POST(
       return NextResponse.json({ error: 'You are not a participant of this mission.' }, { status: 404 });
     }
 
+    // Remove user from participants
     await prisma.missionParticipant.delete({
       where: { missionId_userId: { missionId, userId: user.id } },
     });
