@@ -116,6 +116,15 @@ export function Header() {
           >
             Missions
           </Link>
+
+           <Link href="/dashboard" 
+           className={`text-lg font-bold transition-colors ${
+              pathname.startsWith("/dashboard") // Use startsWith for active state on sub-paths
+                ? "text-[var(--zwarm-yellow)] text-glow-yellow border-b-2 border-[var(--zwarm-yellow)]"
+                : "text-white hover:text-[var(--zwarm-yellow)]"
+            }`}
+           >Dashboard
+           </Link>
           {/* Placeholder for "Start a Mission", to be enabled when user is logged in */}
            <Button
               variant="ghost"

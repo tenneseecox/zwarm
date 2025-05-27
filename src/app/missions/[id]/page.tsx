@@ -171,12 +171,11 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                     <span className="text-gray-200 font-medium">
                       {participant.user.username || 'Anonymous Participant'}
                     </span>
-                    {/* Optional: Display join date */}
-                    {/* {participant.joinedAt && (
+                    {participant.joinedAt && (
                       <span className="text-xs text-gray-500 ml-auto">
                         Joined: {new Date(participant.joinedAt).toLocaleDateString()}
                       </span>
-                    )} */}
+                    )}
                   </li>
                 ))}
               </ul>

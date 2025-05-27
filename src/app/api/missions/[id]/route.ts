@@ -1,14 +1,14 @@
 // src/app/api/missions/[id]/route.ts
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 // Assuming your Supabase client helper path
 import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 
 export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } } // Using the signature from our last attempt for deployment
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-  const missionId = context.params.id;
+  const missionId = params.id;
 
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required.' }, { status: 400 });
@@ -74,7 +74,7 @@ export async function GET(
     return NextResponse.json({ ...mission, currentUserIsParticipant }, { status: 200 });
 
   } catch (error) {
-    console.error(`Error fetching mission ${missionId}:`, error);
+    console.error('Error fetching mission:', error);
     // Your existing error handling for invalid ID format
     type PrismaError = { code?: string; message?: string };
     const isMalformedIdError = (err: unknown): boolean => {

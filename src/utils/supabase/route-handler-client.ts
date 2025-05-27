@@ -1,9 +1,10 @@
-// src/lib/supabase/route-handler-client.ts
+// src/utils/supabase/route-handler-client.ts (or your actual path)
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export const createSupabaseRouteHandlerClient = async () => {
-  const cookieStore = await cookies(); // Use 'await' if cookies() is async in your setup
+export const createSupabaseRouteHandlerClient = async () => { // Keep async if your cookies() setup requires it
+  const cookieStore = await cookies(); // cookies() from next/headers is typically synchronous
+
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -13,23 +14,20 @@ export const createSupabaseRouteHandlerClient = async () => {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // If you are using Next.js App Router, server-side cookies are read-only.
-          // Consider if you need to set cookies here or if auth is handled by middleware.
-          // For read-only scenarios in Route Handlers, this set might not be effective or needed
-          // if you're only reading auth state.
-          // However, Supabase examples often include it for completeness.
           try {
+            // This may not be effective in all Route Handler contexts (e.g., GET if read-only),
+            // but the Supabase client expects these methods to be present.
             cookieStore.set({ name, value, ...options });
           } catch (error) {
-            // Supabase's docs mention this can be a no-op in Route Handlers if read-only
-            console.warn('SupabaseRouteHandlerClient: Failed to set cookie (expected in Route Handlers if read-only)', name, error);
+            console.warn(`SupabaseRouteHandlerClient: Error setting cookie "${name}". This might be expected in a read-only context.`, error);
           }
         },
         remove(name: string, options: CookieOptions) {
-           try {
+          try {
+            // Similar to set, this might not be effective in all contexts.
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {
-            console.warn('SupabaseRouteHandlerClient: Failed to remove cookie (expected in Route Handlers if read-only)', name, error);
+            console.warn(`SupabaseRouteHandlerClient: Error removing cookie "${name}". This might be expected in a read-only context.`, error);
           }
         },
       },
