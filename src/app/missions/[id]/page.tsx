@@ -1,41 +1,41 @@
 // src/app/missions/[id]/page.tsx
-import { Header } from '@/components/Header'; //
-import { SwarmBackground } from '@/components/SwarmBackground'; //
+import { Header } from '@/components/Header';
+import { SwarmBackground } from '@/components/SwarmBackground';
 import { notFound } from 'next/navigation';
-import { Badge } from '@/components/ui/badge'; // Assuming you have Shadcn Badge: npx shadcn-ui@latest add badge
+import { Badge } from '@/components/ui/badge';
 
 interface MissionDetailPageProps {
   params: {
-    id: string; // This comes from the folder name [id]
+    id: string;
   };
 }
 
-// Define a type for the single mission data, similar to FetchedMission
 interface DetailedMission {
   id: string;
   title: string;
   description: string;
   emoji: string | null;
-  status: string; // Or your MissionStatus enum if you transform it
-  createdAt: string; // ISO string from DB
-  updatedAt: string; // ISO string from DB
+  status: string;
+  createdAt: string;
+  updatedAt: string;
   owner?: {
     id: string;
     username: string | null;
     emoji: string | null;
   };
-  // Add other fields as your API returns them
+  tags?: string[]; // <-- ADD THIS LINE (make it optional in case older missions don't have it)
 }
 
 async function getMissionDetails(id: string): Promise<DetailedMission | null> {
   try {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Ensure this API endpoint returns the 'tags' array
     const response = await fetch(`${siteUrl}/api/missions/${id}`, {
-      cache: 'no-store', // Or revalidate as needed
+      cache: 'no-store',
     });
 
     if (response.status === 404) {
-      return null; // Mission not found
+      return null;
     }
     if (!response.ok) {
       console.error("Failed to fetch mission details:", response.status, await response.text());
@@ -49,11 +49,15 @@ async function getMissionDetails(id: string): Promise<DetailedMission | null> {
 }
 
 export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
-  const { id } = await params;
+  // The 'await params' was from a previous specific error fix,
+  // if that error is no longer present or was specific to an older Next.js version/setup,
+  // direct destructuring might be fine. However, if 'await params' worked, keep it.
+  // For this example, I'm sticking to the provided structure.
+  const { id } = await params; // Assuming this is still the intended way you're getting id
   const mission = await getMissionDetails(id);
 
   if (!mission) {
-    notFound(); // Triggers Next.js 404 page
+    notFound();
   }
 
   return (
@@ -75,22 +79,41 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
                 <span>Owned by: {mission.owner?.username || 'Unknown User'} {mission.owner?.emoji}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <span>Status: </span> <Badge variant={mission.status === 'OPEN' ? 'default' : mission.status === 'COMPLETED' ? 'secondary' : 'outline'}
-                                            className={mission.status === 'OPEN' ? 'bg-green-600 text-white' : mission.status === 'COMPLETED' ? 'bg-blue-600 text-white' : 'border-gray-600 text-gray-300'}>
-                                        {mission.status}
-                                     </Badge>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400 mb-3"> {/* Added mb-3 here */}
+                <span>Status: </span>
+                <Badge
+                  variant={mission.status === 'OPEN' ? 'default' : mission.status === 'COMPLETED' ? 'secondary' : 'outline'}
+                  className={
+                    mission.status === 'OPEN' ? 'bg-green-600 text-white' :
+                    mission.status === 'COMPLETED' ? 'bg-blue-600 text-white' :
+                    'border-gray-600 text-gray-300'
+                  }
+                >
+                  {mission.status}
+                </Badge>
                 <span>| Created: {new Date(mission.createdAt).toLocaleDateString()}</span>
               </div>
+
+              {/* Display Tags */}
+              {mission.tags && mission.tags.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-300 mb-1">Tags:</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {mission.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="border-yellow-500 text-yellow-400">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed">
-            {/* For rich text, you might render markdown here later */}
             <p>{mission.description}</p>
           </div>
 
-          {/* Placeholder for future content: Tasks, Contributors, Discussion */}
           <div className="mt-10 border-t border-gray-700 pt-6">
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Control</h2>
             <p className="text-gray-400">Tasks, contributors, and discussion will appear here soon!</p>

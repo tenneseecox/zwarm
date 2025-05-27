@@ -44,6 +44,8 @@ model Mission {
   ownerId     String                         // Foreign key
   owner       User    @relation("MissionOwner", fields: [ownerId], references: [id])
 
+  tags        String[] @default([]) 
+
 
   @@index([ownerId]) 
 }

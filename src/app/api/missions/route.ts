@@ -34,7 +34,15 @@ const createMissionSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters long.").max(100),
   description: z.string().min(10, "Description must be at least 10 characters long.").max(5000),
   emoji: z.string().optional(), // Assuming emoji is optional for now
-  // status will default to OPEN as per Prisma schema
+  tags: z.array(
+          z.string()
+            .min(1, { message: "Tag cannot be empty." })
+            .max(25, { message: "Tag cannot be longer than 25 characters." })
+            .regex(/^[a-zA-Z0-9-]+$/, { message: "Tag can only contain letters, numbers, and hyphens." }) // Example regex
+        )
+        .max(5, { message: "You can add a maximum of 5 tags." })
+        .optional() // Makes the entire 'tags' array optional
+        .default([]),
 });
 
 // --- POST Handler: Create a new Mission ---
@@ -67,7 +75,8 @@ export async function POST(request: NextRequest) {
         title: missionData.title,
         description: missionData.description,
         emoji: missionData.emoji,
-        ownerId: user.id, // Link to the authenticated user
+        ownerId: user.id,
+        tags: missionData.tags || [], // Link to the authenticated user
         // status defaults to OPEN as per your Prisma schema
       },
     });
