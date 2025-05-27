@@ -1,18 +1,19 @@
 // src/app/api/missions/[id]/join/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Adjust path if needed
+// Ensure this path is correct and the helper is correctly defined and exported
+import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 
-// Keep the interface for clarity/documentation if you like, but don't use it directly in the function signature type.
-// interface RouteParams {
-//   params: {
-//     id: string;
-//   };
-// }
+// Define an interface for the context object passed as the second argument
+interface RouteContext {
+  params: {
+    id: string; // This corresponds to the [id] dynamic segment in your route
+  };
+}
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } } // Correctly type the second argument structure
+  context: RouteContext // Use the explicitly typed context object here
 ) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -21,11 +22,12 @@ export async function POST(
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  // Access missionId directly from params object
-  const missionId = params.id; // Access from the destructured params
+  // Access 'id' from context.params
+  const missionId = context.params.id;
 
   if (!missionId) {
-    return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
+    // This check is generally good practice, though Next.js usually ensures params.id is a string.
+    return NextResponse.json({ error: 'Mission ID is required in the path' }, { status: 400 });
   }
 
   try {
@@ -49,8 +51,6 @@ export async function POST(
     return NextResponse.json({ message: 'Successfully joined mission!', participant: newParticipant }, { status: 201 });
   } catch (error) {
     console.error(`Error joining mission ${missionId} for user ${user.id}:`, error);
-    // Consider more specific error handling for Prisma unique constraint violations if needed,
-    // though the check for existingParticipation should catch most legitimate "already joined" cases.
     return NextResponse.json({ error: 'Failed to join mission.' }, { status: 500 });
   }
 }
