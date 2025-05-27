@@ -102,6 +102,11 @@ export async function GET() {
             emoji: true, // Or avatarUrl if you add that to User
           },
         },
+       _count: { // <-- ADD THIS TO COUNT PARTICIPANTS
+          select: {
+            participants: true, // This assumes your relation on Mission is named 'participants'
+          },
+        }, 
       },
     });
     return NextResponse.json(missions, { status: 200 });

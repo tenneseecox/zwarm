@@ -3,6 +3,12 @@ import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { cookies } from 'next/headers';
+
+
+// Import the new components and helpers
+import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
+import { createClient } from '@/utils/supabase/server'; // Your Supabase server client helper
 
 interface MissionDetailPageProps {
   params: {
@@ -10,6 +16,7 @@ interface MissionDetailPageProps {
   };
 }
 
+// Updated interface to match the API response
 interface DetailedMission {
   id: string;
   title: string;
@@ -23,47 +30,58 @@ interface DetailedMission {
     username: string | null;
     emoji: string | null;
   };
-  tags?: string[]; // <-- ADD THIS LINE (make it optional in case older missions don't have it)
+  tags?: string[];
+  _count?: { // For participant count from Prisma's _count
+    participants?: number;
+  };
+  currentUserIsParticipant?: boolean; // To know if the viewing user has joined
 }
 
 async function getMissionDetails(id: string): Promise<DetailedMission | null> {
   try {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    // Ensure this API endpoint returns the 'tags' array
+    // This API fetch now expects _count.participants and currentUserIsParticipant
     const response = await fetch(`${siteUrl}/api/missions/${id}`, {
-      cache: 'no-store',
+      cache: 'no-store', // Important for dynamic data like participation status
     });
 
     if (response.status === 404) {
       return null;
     }
     if (!response.ok) {
-      console.error("Failed to fetch mission details:", response.status, await response.text());
+      console.error("Failed to fetch mission details (page):", response.status, await response.text());
       return null;
     }
-    return await response.json();
+    const data: DetailedMission = await response.json();
+    return data;
   } catch (error) {
-    console.error(`Error in getMissionDetails for ID ${id}:`, error);
+    console.error(`Error in getMissionDetails (page) for ID ${id}:`, error);
     return null;
   }
 }
 
 export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
-  // The 'await params' was from a previous specific error fix,
-  // if that error is no longer present or was specific to an older Next.js version/setup,
-  // direct destructuring might be fine. However, if 'await params' worked, keep it.
-  // For this example, I'm sticking to the provided structure.
-  const { id } = await params; // Assuming this is still the intended way you're getting id
+  // Maintaining your 'await params' structure for fetching 'id'
+  const { id } = await params;
+
+  // Fetch current user on the server to determine ownership and pass login status
+  const cookieStore = cookies();
+  const supabase = await createClient(cookieStore);
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+
   const mission = await getMissionDetails(id);
 
   if (!mission) {
-    notFound();
+    notFound(); // Triggers Next.js 404 page
   }
+
+  const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
+  const participantCount = mission._count?.participants ?? 0; // Default to 0 if undefined
 
   return (
     <div className="min-h-screen bg-black-950 text-white">
       <SwarmBackground />
-      <Header />
+      <Header /> {/* Ensure Header updates based on auth state if needed */}
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
         <article className="max-w-3xl mx-auto glass-dark p-6 md:p-8 rounded-zwarm shadow-zwarm-dark">
           <div className="flex items-start gap-4 mb-6">
@@ -79,7 +97,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
               <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
                 <span>Owned by: {mission.owner?.username || 'Unknown User'} {mission.owner?.emoji}</span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400 mb-3"> {/* Added mb-3 here */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400 mb-1">
                 <span>Status: </span>
                 <Badge
                   variant={mission.status === 'OPEN' ? 'default' : mission.status === 'COMPLETED' ? 'secondary' : 'outline'}
@@ -93,11 +111,15 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                 </Badge>
                 <span>| Created: {new Date(mission.createdAt).toLocaleDateString()}</span>
               </div>
+              {/* Display Participant Count */}
+              <div className="text-sm text-gray-400 mb-3">
+                <span>Participants: {participantCount}</span>
+              </div>
 
               {/* Display Tags */}
               {mission.tags && mission.tags.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-gray-300 mb-1">Tags:</h3>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tags:</h3>
                   <div className="flex flex-wrap gap-2">
                     {mission.tags.map((tag) => (
                       <Badge key={tag} variant="outline" className="border-yellow-500 text-yellow-400">
@@ -110,13 +132,25 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             </div>
           </div>
 
-          <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed">
+          <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed mb-8">
             <p>{mission.description}</p>
+          </div>
+
+          {/* Join/Leave Button Area */}
+          <div className="mb-8">
+            <JoinLeaveButton
+              missionId={mission.id}
+              initialIsJoined={mission.currentUserIsParticipant || false}
+              isOwner={isOwner}
+              isLoggedIn={!!currentUser} // Pass login status to the button
+            />
           </div>
 
           <div className="mt-10 border-t border-gray-700 pt-6">
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Control</h2>
-            <p className="text-gray-400">Tasks, contributors, and discussion will appear here soon!</p>
+             {/* You can also display participant count here if you like */}
+            <p className="text-gray-400 mb-2">Active Participants: {participantCount}</p>
+            <p className="text-gray-400">Tasks, a full list of contributors, and extended discussion will appear here soon!</p>
           </div>
         </article>
       </main>

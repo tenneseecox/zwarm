@@ -25,6 +25,7 @@ interface FetchedMission {
   participantsCount?: number; // Or a direct count
   createdAt: string; // Expecting ISO string
   status: string; // Assuming status is also fetched
+  currentUserIsParticipant?: boolean;
 }
 
 

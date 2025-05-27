@@ -29,6 +29,7 @@ model User {
   updatedAt DateTime @default(now()) @updatedAt
 
     ownedMissions Mission[] @relation("MissionOwner") 
+    joinedMissions MissionParticipant[]
 }
 
 // Mission Model
@@ -45,9 +46,24 @@ model Mission {
   owner       User    @relation("MissionOwner", fields: [ownerId], references: [id])
 
   tags        String[] @default([]) 
+  participants MissionParticipant[]
 
 
   @@index([ownerId]) 
+}
+
+model MissionParticipant {
+  id        String   @id @default(uuid())
+  missionId String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade) // Added onDelete
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade) // Added onDelete
+
+  @@unique([missionId, userId]) // A user can join a specific mission only once
+  @@index([missionId])
+  @@index([userId])
 }
 
 
