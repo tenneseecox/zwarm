@@ -1,27 +1,19 @@
 // src/app/api/missions/[id]/route.ts
-
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Adjust path as per your project
+// Assuming your Supabase client helper path
+import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-// --- GET Handler: Fetch a single Mission by ID ---
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  // Using 'await params' as per your existing structure.
-  // Ensure 'params' is indeed awaitable in your context if this was a specific fix.
-  // Typically, for { params }, params.id is directly accessible.
-  const { id: missionId } = await params;
+export async function GET(
+  request: NextRequest,
+  context: { params: { id: string } } // Using the signature from our last attempt for deployment
+) {
+  const missionId = context.params.id;
 
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required.' }, { status: 400 });
   }
 
-  // Initialize Supabase client to get current user context
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
 
@@ -36,10 +28,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             emoji: true,
           },
         },
-        _count: { // Include the count of participants
+        _count: { // Keep the count of participants
           select: {
-            participants: true, // Assumes relation on Mission model is named 'participants'
-                                // linking to a MissionParticipant model
+            participants: true, // Assumes relation on Mission model is 'participants'
+          },
+        },
+        participants: { // <-- NEW: Include the actual participants list
+          orderBy: {
+            joinedAt: 'asc', // Optional: Order by when they joined
+          },
+          select: {
+            joinedAt: true, // Optional: if you want to show join date
+            user: {         // Select details of the participating user
+              select: {
+                id: true,
+                username: true,
+                emoji: true,
+              },
+            },
           },
         },
       },
@@ -50,38 +56,34 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     let currentUserIsParticipant = false;
-    if (currentUser && mission) { // Check if there's a logged-in user and mission exists
-      const participation = await prisma.missionParticipant.findUnique({
+    if (currentUser && mission) {
+      // This check can remain, or you could derive it from the fetched 'participants' list on the client
+      // For consistency, keeping it here is fine.
+      const participationRecord = await prisma.missionParticipant.findUnique({
         where: {
-          missionId_userId: { // This assumes your @@unique constraint is named this or similar
+          missionId_userId: {
             missionId: mission.id,
             userId: currentUser.id,
           },
         },
       });
-      currentUserIsParticipant = !!participation;
+      currentUserIsParticipant = !!participationRecord;
     }
 
-    // Add the participation status to the mission object before sending
-    const missionWithParticipation = {
-      ...mission,
-      currentUserIsParticipant,
-    };
-
-    return NextResponse.json(missionWithParticipation, { status: 200 });
+    // The 'mission' object now includes owner, _count, the full participants list, and tags (by default)
+    return NextResponse.json({ ...mission, currentUserIsParticipant }, { status: 200 });
 
   } catch (error) {
     console.error(`Error fetching mission ${missionId}:`, error);
-    
     // Your existing error handling for invalid ID format
     type PrismaError = { code?: string; message?: string };
     const isMalformedIdError = (err: unknown): boolean => {
         if (typeof err === 'object' && err !== null) {
             const prismaError = err as PrismaError;
-            return (prismaError.code === 'P2023' || // Prisma error for malformed ID / non-UUID
-                   (typeof prismaError.message === 'string' && 
-                    (prismaError.message.includes('Malformed ObjectID') || // MongoDB specific
-                     prismaError.message.includes("Invalid `prisma.mission.findUnique()` invocation")) // General Prisma client error if ID is bad
+            return (prismaError.code === 'P2023' ||
+                   (typeof prismaError.message === 'string' &&
+                    (prismaError.message.includes('Malformed ObjectID') ||
+                     prismaError.message.includes("Invalid `prisma.mission.findUnique()` invocation"))
                    )
                   );
         }
@@ -94,7 +96,3 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Failed to fetch mission.' }, { status: 500 });
   }
 }
-
-// Later, you can add PUT (update) and DELETE handlers in this same file.
-// export async function PUT(request: NextRequest, { params }: RouteParams) { /* ... */ }
-// export async function DELETE(request: NextRequest, { params }: RouteParams) { /* ... */ }

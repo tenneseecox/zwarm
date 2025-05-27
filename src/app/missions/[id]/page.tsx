@@ -4,6 +4,7 @@ import { SwarmBackground } from '@/components/SwarmBackground';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cookies } from 'next/headers';
+import { UserCircle } from 'lucide-react'; // Import UserCircle icon
 
 
 // Import the new components and helpers
@@ -17,6 +18,17 @@ interface MissionDetailPageProps {
 }
 
 // Updated interface to match the API response
+interface ParticipantUser { // Define a type for the user part of a participant
+  id: string;
+  username: string | null;
+  emoji: string | null;
+}
+
+interface MissionParticipantInfo { // Define a type for each item in the participants list
+  joinedAt?: string; // Assuming it's an ISO string if you select it
+  user: ParticipantUser;
+}
+
 interface DetailedMission {
   id: string;
   title: string;
@@ -25,16 +37,13 @@ interface DetailedMission {
   status: string;
   createdAt: string;
   updatedAt: string;
-  owner?: {
-    id: string;
-    username: string | null;
-    emoji: string | null;
-  };
+  owner?: ParticipantUser; // Re-using ParticipantUser type for owner
   tags?: string[];
-  _count?: { // For participant count from Prisma's _count
+  _count?: {
     participants?: number;
   };
-  currentUserIsParticipant?: boolean; // To know if the viewing user has joined
+  currentUserIsParticipant?: boolean;
+  participants?: MissionParticipantInfo[]; // <-- ADD THIS LINE for the list of participants
 }
 
 async function getMissionDetails(id: string): Promise<DetailedMission | null> {
@@ -76,7 +85,8 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
   }
 
   const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
-  const participantCount = mission._count?.participants ?? 0; // Default to 0 if undefined
+  const participantCount = mission._count?.participants ?? 0;
+  const participantsList = mission.participants || []; 
 
   return (
     <div className="min-h-screen bg-black-950 text-white">
@@ -146,11 +156,35 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             />
           </div>
 
+          {/* Mission Control / Participants Section */}
           <div className="mt-10 border-t border-gray-700 pt-6">
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Control</h2>
-             {/* You can also display participant count here if you like */}
-            <p className="text-gray-400 mb-2">Active Participants: {participantCount}</p>
-            <p className="text-gray-400">Tasks, a full list of contributors, and extended discussion will appear here soon!</p>
+            
+            <h3 className="text-xl font-semibold text-yellow-400 mb-3">Participants ({participantCount})</h3>
+            {participantsList.length > 0 ? (
+              <ul className="space-y-3">
+                {participantsList.map((participant) => (
+                  <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
+                    <span className="text-2xl">
+                      {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
+                    </span>
+                    <span className="text-gray-200 font-medium">
+                      {participant.user.username || 'Anonymous Participant'}
+                    </span>
+                    {/* Optional: Display join date */}
+                    {/* {participant.joinedAt && (
+                      <span className="text-xs text-gray-500 ml-auto">
+                        Joined: {new Date(participant.joinedAt).toLocaleDateString()}
+                      </span>
+                    )} */}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400">No participants have joined this mission yet. Be the first!</p>
+            )}
+            
+            <p className="text-gray-400 mt-6">More mission tools (tasks, discussions) will appear here soon!</p>
           </div>
         </article>
       </main>

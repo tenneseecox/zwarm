@@ -3,9 +3,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Adjust path
 
-interface RouteParams { params: { id: string } }
-
-export async function POST(request: NextRequest, { params }: RouteParams) { // Using POST for simplicity
+export async function POST(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) { // U
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const missionId = params.id;
+  const missionId = context.params.id;
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
   }

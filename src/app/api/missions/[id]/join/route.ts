@@ -5,7 +5,7 @@ import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } } // Apply the same signature
+  context: { params: { id: string } }
 ) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
