@@ -23,10 +23,11 @@ const updateMissionSchema = z.object({
 
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const { id: missionId } = await params;
+  const params = await context.params;
+  const missionId = params.id;
 
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required.' }, { status: 400 });
@@ -39,30 +40,20 @@ export async function GET(
     const mission = await prisma.mission.findUnique({
       where: { id: missionId },
       include: {
-        owner: {
-          select: {
-            id: true,
-            username: true,
-            emoji: true,
-          },
-        },
-        _count: {
-          select: {
-            participants: true,
-          },
-        },
-        participants: {
-          orderBy: {
-            joinedAt: 'asc',
-          },
+        owner: { select: { id: true, username: true, emoji: true } },
+        _count: { select: { participants: true } },
+        participants: { /* ... your existing participants include ... */
+          orderBy: { joinedAt: 'asc' },
           select: {
             joinedAt: true,
-            user: {
-              select: {
-                id: true,
-                username: true,
-                emoji: true,
-              },
+            user: { select: { id: true, username: true, emoji: true } },
+          },
+        },
+        tasks: { // <-- NEW: Include tasks for this mission
+          orderBy: { createdAt: 'asc' }, // Or any order you prefer
+          include: {
+            creator: { // Include details of the user who created the task
+              select: { id: true, username: true, emoji: true },
             },
           },
         },
@@ -76,12 +67,7 @@ export async function GET(
     let currentUserIsParticipant = false;
     if (currentUser && mission) {
       const participationRecord = await prisma.missionParticipant.findUnique({
-        where: {
-          missionId_userId: {
-            missionId: mission.id,
-            userId: currentUser.id,
-          },
-        },
+        where: { missionId_userId: { missionId: mission.id, userId: currentUser.id } },
       });
       currentUserIsParticipant = !!participationRecord;
     }
@@ -89,7 +75,8 @@ export async function GET(
     return NextResponse.json({ ...mission, currentUserIsParticipant }, { status: 200 });
 
   } catch (error) {
-    console.error('Error fetching mission:', error);
+    // ... (your existing error handling)
+    console.error(`Error fetching mission ${missionId}:`, error);
     return NextResponse.json({ error: 'Failed to fetch mission.' }, { status: 500 });
   }
 }

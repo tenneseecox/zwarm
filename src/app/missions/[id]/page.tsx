@@ -8,6 +8,8 @@ import { cookies } from 'next/headers';
 import { UserCircle } from 'lucide-react'; // Import UserCircle icon
 import Link from 'next/link';
 import { DeleteMissionButton } from '@/components/DeleteMissionButton';
+import { AddTaskForm } from '@/components/AddTaskForm';
+import { TaskList } from '@/components/TaskList';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -19,7 +21,22 @@ interface MissionDetailPageProps {
   };
 }
 
-// Updated interface to match the API response
+
+
+interface TaskCreator {
+  id: string;
+  username: string | null;
+  emoji: string | null;
+}
+
+export interface MissionTaskData {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+  createdAt: string; // Or Date, depending on API transformation
+  creator: TaskCreator;
+  // missionId?: string; // Potentially, if needed by client components
+}
 interface ParticipantUser { // Define a type for the user part of a participant
   id: string;
   username: string | null;
@@ -39,13 +56,14 @@ export interface DetailedMission {
   status: string;
   createdAt: string;
   updatedAt: string;
-  owner?: ParticipantUser; // Re-using ParticipantUser type for owner
+  owner?: ParticipantUser; 
   tags?: string[];
   _count?: {
     participants?: number;
   };
   currentUserIsParticipant?: boolean;
-  participants?: MissionParticipantInfo[]; // <-- ADD THIS LINE for the list of participants
+  participants?: MissionParticipantInfo[];
+  tasks?: MissionTaskData[]; 
 }
 
 async function getMissionDetails(id: string): Promise<DetailedMission | null> {
@@ -85,6 +103,8 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
   if (!mission) {
     notFound(); // Triggers Next.js 404 page
   }
+
+  const tasks = mission.tasks || [];
 
   const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
   const participantCount = mission._count?.participants ?? 0;
@@ -200,6 +220,23 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             
             <p className="text-gray-400 mt-6">More mission tools (tasks, discussions) will appear here soon!</p>
           </div>
+
+          <div className="mt-10 border-t border-gray-700 pt-6">
+      <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
+      
+      {isOwner && (
+        <AddTaskForm missionId={mission.id} />
+      )}
+
+      <TaskList
+        tasks={tasks}
+        missionId={mission.id}
+        currentUserId={currentUser?.id}
+        missionOwnerId={mission.owner?.id}
+      />
+    </div>
+
+
         </article>
       </main>
     </div>
