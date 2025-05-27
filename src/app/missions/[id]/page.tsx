@@ -3,9 +3,10 @@ import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cookies } from 'next/headers';
 import { UserCircle } from 'lucide-react'; // Import UserCircle icon
-
+import Link from 'next/link';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -29,7 +30,7 @@ interface MissionParticipantInfo { // Define a type for each item in the partici
   user: ParticipantUser;
 }
 
-interface DetailedMission {
+export interface DetailedMission {
   id: string;
   title: string;
   description: string;
@@ -146,6 +147,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             <p>{mission.description}</p>
           </div>
 
+
           {/* Join/Leave Button Area */}
           <div className="mb-8">
             <JoinLeaveButton
@@ -155,6 +157,17 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
               isLoggedIn={!!currentUser} // Pass login status to the button
             />
           </div>
+
+
+          {isOwner && (
+  <div className="mt-6 mb-8 text-center sm:text-left"> {/* Added margin and text alignment */}
+    <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
+      <Link href={`/missions/${mission.id}/edit`}>
+        ✏️ Edit Mission
+      </Link>
+    </Button>
+  </div>
+)}  
 
           {/* Mission Control / Participants Section */}
           <div className="mt-10 border-t border-gray-700 pt-6">

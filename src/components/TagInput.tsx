@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react'; // Assuming you have lucide-react for icons
+import { cn } from '@/lib/utils';
 
 interface TagInputProps {
   value: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
+  className?: string;
   maxTags?: number;
   maxTagLength?: number;
   validateTag?: (tag: string) => boolean; // Optional custom validation for a tag
@@ -20,6 +22,7 @@ export function TagInput({
   value = [],
   onChange,
   placeholder = "Add tags...",
+  className,
   maxTags = 5,
   maxTagLength = 25,
   validateTag = (tag) => /^[a-zA-Z0-9-]+$/.test(tag) && tag.length > 0 && tag.length <= maxTagLength,
@@ -70,22 +73,20 @@ export function TagInput({
   };
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-2 mb-2">
-        {localTags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-            {tag}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-4 w-4 rounded-full"
-              onClick={() => removeTag(tag)}
-            >
-              <XIcon className="h-3 w-3" />
-            </Button>
-          </Badge>
-        ))}
-      </div>
+    <div className={cn("flex flex-wrap gap-2 p-2 border rounded-md bg-background", className)}>
+      {localTags.map((tag) => (
+        <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+          {tag}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-4 w-4 rounded-full"
+            onClick={() => removeTag(tag)}
+          >
+            <XIcon className="h-3 w-3" />
+          </Button>
+        </Badge>
+      ))}
       <Input
         type="text"
         value={inputValue}
