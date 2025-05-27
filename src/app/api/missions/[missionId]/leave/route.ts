@@ -1,11 +1,10 @@
-// src/app/api/missions/[id]/leave/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: { missionId: string } }
 ) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -15,7 +14,7 @@ export async function POST(
   }
 
   const params = await context.params;
-  const missionId = params.id;
+  const missionId = params.missionId;
 
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
@@ -37,7 +36,7 @@ export async function POST(
     });
 
     if (!existingParticipation) {
-      return NextResponse.json({ error: 'You are not a participant of this mission.' }, { status: 404 });
+      return NextResponse.json({ error: 'You are not a participant of this mission.' }, { status: 400 });
     }
 
     // Remove user from participants
@@ -50,4 +49,4 @@ export async function POST(
     console.error(`Error leaving mission ${missionId} for user ${user.id}:`, error);
     return NextResponse.json({ error: 'Failed to leave mission.' }, { status: 500 });
   }
-}
+} 

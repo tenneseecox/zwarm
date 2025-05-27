@@ -11,11 +11,16 @@ interface RouteContext {
 }
 
 const updateTaskSchema = z.object({
+  text: z.string().min(1, "Task text cannot be empty.").max(500).optional(),
   isCompleted: z.boolean().optional(),
-  text: z.string().min(1).max(500).optional(),
+}).refine(data => data.text !== undefined || data.isCompleted !== undefined, {
+  message: "At least one field (text or isCompleted) must be provided for update"
 });
 
-export async function PUT(request: NextRequest, context: { params: RouteContext['params'] }) {
+export async function PUT(
+  request: NextRequest,
+  context: RouteContext
+) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -26,63 +31,65 @@ export async function PUT(request: NextRequest, context: { params: RouteContext[
   const params = await context.params;
   const { missionId, taskId } = params;
 
-  let validatedData;
-  try {
-    const body = await request.json();
-    validatedData = updateTaskSchema.parse(body);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid input for task update.', details: error.errors }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
+  if (!missionId || !taskId) {
+    return NextResponse.json({ error: 'Mission ID and Task ID are required.' }, { status: 400 });
   }
 
   try {
-    const taskToUpdate = await prisma.missionTask.findUnique({
+    // Validate request body
+    const body = await request.json();
+    const validatedData = updateTaskSchema.parse(body);
+
+    // Check if task exists
+    const task = await prisma.missionTask.findUnique({
       where: { id: taskId },
-      include: { mission: true },
+      include: {
+        mission: true,
+      },
     });
 
-    if (!taskToUpdate || taskToUpdate.missionId !== missionId) {
-      return NextResponse.json({ error: 'Task not found or does not belong to this mission.' }, { status: 404 });
+    if (!task) {
+      return NextResponse.json({ error: 'Task not found.' }, { status: 404 });
     }
 
-    const isOwner = taskToUpdate.mission.ownerId === user.id;
-    const isCreator = taskToUpdate.creatorId === user.id;
-
-    if (!isOwner && !isCreator) {
-      return NextResponse.json({ error: 'Forbidden: You do not have permission to update this task.' }, { status: 403 });
-    }
-    
-    const dataToUpdate: { text?: string; isCompleted?: boolean } = {};
-    if (validatedData.text !== undefined) {
-      if (!isOwner && !isCreator) {
-        return NextResponse.json({ error: 'Forbidden: Only owner or creator can edit task text.' }, { status: 403 });
-      }
-      dataToUpdate.text = validatedData.text;
-    }
-    if (validatedData.isCompleted !== undefined) {
-      dataToUpdate.isCompleted = validatedData.isCompleted;
+    // Verify task belongs to the specified mission
+    if (task.missionId !== missionId) {
+      return NextResponse.json({ error: 'Task does not belong to the specified mission.' }, { status: 400 });
     }
 
-    if (Object.keys(dataToUpdate).length === 0) {
-      return NextResponse.json({ error: 'No update data provided.' }, { status: 400 });
+    // Check if user is the task creator or mission owner
+    if (task.creatorId !== user.id && task.mission.ownerId !== user.id) {
+      return NextResponse.json({ error: 'You do not have permission to update this task.' }, { status: 403 });
     }
 
+    // Update the task with only the provided fields
     const updatedTask = await prisma.missionTask.update({
       where: { id: taskId },
-      data: dataToUpdate,
-      include: { creator: { select: { id: true, username: true, emoji: true } } },
+      data: {
+        ...(validatedData.text !== undefined && { text: validatedData.text }),
+        ...(validatedData.isCompleted !== undefined && { isCompleted: validatedData.isCompleted }),
+      },
+      include: {
+        creator: {
+          select: { id: true, username: true, emoji: true },
+        },
+      },
     });
 
     return NextResponse.json(updatedTask, { status: 200 });
   } catch (error) {
-    console.error(`Error updating task ${taskId}:`, error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid input.', details: error.errors }, { status: 400 });
+    }
+    console.error(`Error updating task ${taskId} in mission ${missionId}:`, error);
     return NextResponse.json({ error: 'Failed to update task.' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: RouteContext['params'] }) {
+export async function DELETE(
+  request: NextRequest,
+  context: RouteContext
+) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -93,27 +100,41 @@ export async function DELETE(request: NextRequest, context: { params: RouteConte
   const params = await context.params;
   const { missionId, taskId } = params;
 
+  if (!missionId || !taskId) {
+    return NextResponse.json({ error: 'Mission ID and Task ID are required.' }, { status: 400 });
+  }
+
   try {
-    const taskToDelete = await prisma.missionTask.findUnique({
+    // Check if task exists
+    const task = await prisma.missionTask.findUnique({
       where: { id: taskId },
-      include: { mission: true },
+      include: {
+        mission: true,
+      },
     });
 
-    if (!taskToDelete || taskToDelete.missionId !== missionId) {
-      return NextResponse.json({ error: 'Task not found or does not belong to this mission.' }, { status: 404 });
+    if (!task) {
+      return NextResponse.json({ error: 'Task not found.' }, { status: 404 });
     }
 
-    if (taskToDelete.mission.ownerId !== user.id && taskToDelete.creatorId !== user.id) {
-      return NextResponse.json({ error: 'Forbidden: You do not have permission to delete this task.' }, { status: 403 });
+    // Verify task belongs to the specified mission
+    if (task.missionId !== missionId) {
+      return NextResponse.json({ error: 'Task does not belong to the specified mission.' }, { status: 400 });
     }
 
+    // Check if user is the task creator or mission owner
+    if (task.creatorId !== user.id && task.mission.ownerId !== user.id) {
+      return NextResponse.json({ error: 'You do not have permission to delete this task.' }, { status: 403 });
+    }
+
+    // Delete the task
     await prisma.missionTask.delete({
       where: { id: taskId },
     });
 
-    return NextResponse.json({ message: 'Task deleted successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Task deleted successfully.' }, { status: 200 });
   } catch (error) {
-    console.error(`Error deleting task ${taskId}:`, error);
+    console.error(`Error deleting task ${taskId} from mission ${missionId}:`, error);
     return NextResponse.json({ error: 'Failed to delete task.' }, { status: 500 });
   }
 } 

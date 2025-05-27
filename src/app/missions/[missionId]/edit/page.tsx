@@ -1,20 +1,20 @@
-// src/app/missions/[id]/edit/page.tsx
+// src/app/missions/[missionId]/edit/page.tsx
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
-import { EditMissionForm } from '@/components/EditMissionForm'; // We will create this next
-import type { DetailedMission } from '../page'; // Assuming DetailedMission type is exported from your detail page or a shared types file
+import { EditMissionForm } from '@/components/EditMissionForm';
+import type { DetailedMission } from '../page';
 
-// Re-using or adapting getMissionDetails from your detail page for server-side fetch
-async function getMissionForEdit(id: string): Promise<DetailedMission | null> {
-  // This should ideally fetch directly using Prisma or a server-side data lib,
-  // or call your API. For simplicity, let's assume a similar fetch to getMissionDetails.
-  // Ensure it fetches all fields needed for the form (title, desc, emoji, tags, status).
+interface EditMissionPageProps {
+  params: { missionId: string };
+}
+
+async function getMissionForEdit(missionId: string): Promise<DetailedMission | null> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   try {
-    const response = await fetch(`${siteUrl}/api/missions/${id}`, { cache: 'no-store' });
+    const response = await fetch(`${siteUrl}/api/missions/${missionId}`, { cache: 'no-store' });
     if (!response.ok) return null;
     return await response.json();
   } catch (error) {
@@ -23,12 +23,8 @@ async function getMissionForEdit(id: string): Promise<DetailedMission | null> {
   }
 }
 
-interface EditMissionPageProps {
-  params: { id: string };
-}
-
 export default async function EditMissionPage({ params }: EditMissionPageProps) {
-  const missionId = params.id;
+  const { missionId } = await params;
 
   const cookieStore = cookies();
   const supabase = await createClient(cookieStore);
@@ -46,10 +42,7 @@ export default async function EditMissionPage({ params }: EditMissionPageProps) 
 
   // Authorization: Check if the current user is the owner
   if (mission.owner?.id !== user.id) {
-    // You could redirect to an unauthorized page or back to the mission detail page
-    // For now, let's show notFound, but a "Forbidden" message is better.
-    // Consider redirecting: redirect(`/missions/${missionId}?error=unauthorized`);
-    notFound(); // Or a dedicated "Forbidden" component
+    redirect(`/missions/${missionId}?error=unauthorized`);
   }
 
   return (

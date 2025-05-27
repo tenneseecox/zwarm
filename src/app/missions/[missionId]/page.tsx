@@ -1,4 +1,4 @@
-// src/app/missions/[id]/page.tsx
+// src/app/missions/[missionId]/page.tsx
 import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
 import { notFound } from 'next/navigation';
@@ -17,11 +17,9 @@ import { createClient } from '@/utils/supabase/server'; // Your Supabase server 
 
 interface MissionDetailPageProps {
   params: {
-    id: string;
+    missionId: string;
   };
 }
-
-
 
 interface TaskCreator {
   id: string;
@@ -37,6 +35,7 @@ export interface MissionTaskData {
   creator: TaskCreator;
   // missionId?: string; // Potentially, if needed by client components
 }
+
 interface ParticipantUser { // Define a type for the user part of a participant
   id: string;
   username: string | null;
@@ -66,12 +65,15 @@ export interface DetailedMission {
   tasks?: MissionTaskData[]; 
 }
 
-async function getMissionDetails(id: string): Promise<DetailedMission | null> {
+async function getMissionDetails(missionId: string): Promise<DetailedMission | null> {
   try {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    // This API fetch now expects _count.participants and currentUserIsParticipant
-    const response = await fetch(`${siteUrl}/api/missions/${id}`, {
-      cache: 'no-store', // Important for dynamic data like participation status
+    const response = await fetch(`${siteUrl}/api/missions/${missionId}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
 
     if (response.status === 404) {
@@ -84,31 +86,30 @@ async function getMissionDetails(id: string): Promise<DetailedMission | null> {
     const data: DetailedMission = await response.json();
     return data;
   } catch (error) {
-    console.error(`Error in getMissionDetails (page) for ID ${id}:`, error);
+    console.error(`Error in getMissionDetails (page) for ID ${missionId}:`, error);
     return null;
   }
 }
 
 export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
-  // Maintaining your 'await params' structure for fetching 'id'
-  const { id } = await params;
+  const { missionId } = await params;
 
   // Fetch current user on the server to determine ownership and pass login status
   const cookieStore = cookies();
   const supabase = await createClient(cookieStore);
   const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-  const mission = await getMissionDetails(id);
+  const mission = await getMissionDetails(missionId);
 
   if (!mission) {
-    notFound(); // Triggers Next.js 404 page
+    notFound();
   }
 
   const tasks = mission.tasks || [];
-
   const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
   const participantCount = mission._count?.participants ?? 0;
-  const participantsList = mission.participants || []; 
+  const participantsList = mission.participants || [];
+  const currentUserIsParticipant = mission.currentUserIsParticipant ?? false;
 
   return (
     <div className="min-h-screen bg-black-950 text-white">
@@ -168,28 +169,26 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             <p>{mission.description}</p>
           </div>
 
-
           {/* Join/Leave Button Area */}
           <div className="mb-8">
             <JoinLeaveButton
               missionId={mission.id}
-              initialIsJoined={mission.currentUserIsParticipant || false}
+              initialIsJoined={currentUserIsParticipant}
               isOwner={isOwner}
-              isLoggedIn={!!currentUser} // Pass login status to the button
+              isLoggedIn={!!currentUser}
             />
           </div>
 
-
           {isOwner && (
-  <div className="mt-6 mb-8 text-center sm:text-left flex gap-4"> {/* Added flex and gap */}
-    <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
-      <Link href={`/missions/${mission.id}/edit`}>
-        ✏️ Edit Mission
-      </Link>
-    </Button>
-    <DeleteMissionButton missionId={mission.id} missionTitle={mission.title} />
-  </div>
-)}  
+            <div className="mt-6 mb-8 text-center sm:text-left flex gap-4"> {/* Added flex and gap */}
+              <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
+                <Link href={`/missions/${mission.id}/edit`}>
+                  ✏️ Edit Mission
+                </Link>
+              </Button>
+              <DeleteMissionButton missionId={mission.id} missionTitle={mission.title} />
+            </div>
+          )}  
 
           {/* Mission Control / Participants Section */}
           <div className="mt-10 border-t border-gray-700 pt-6">
@@ -198,21 +197,36 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             <h3 className="text-xl font-semibold text-yellow-400 mb-3">Participants ({participantCount})</h3>
             {participantsList.length > 0 ? (
               <ul className="space-y-3">
-                {participantsList.map((participant) => (
-                  <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
-                    <span className="text-2xl">
-                      {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
-                    </span>
-                    <span className="text-gray-200 font-medium">
-                      {participant.user.username || 'Anonymous Participant'}
-                    </span>
-                    {participant.joinedAt && (
-                      <span className="text-xs text-gray-500 ml-auto">
-                        Joined: {new Date(participant.joinedAt).toLocaleDateString()}
+                {participantsList
+                  .sort((a, b) => {
+                    // Put current user at the top
+                    if (a.user.id === currentUser?.id) return -1;
+                    if (b.user.id === currentUser?.id) return 1;
+                    // Then sort by join date
+                    return new Date(a.joinedAt || '').getTime() - new Date(b.joinedAt || '').getTime();
+                  })
+                  .map((participant) => (
+                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
+                      <span className="text-2xl">
+                        {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
                       </span>
-                    )}
-                  </li>
-                ))}
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-200 font-medium">
+                          {participant.user.username || 'Anonymous Participant'}
+                        </span>
+                        {participant.user.id === currentUser?.id && (
+                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                            YOU
+                          </Badge>
+                        )}
+                      </div>
+                      {participant.joinedAt && (
+                        <span className="text-xs text-gray-500 ml-auto">
+                          Joined: {new Date(participant.joinedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </li>
+                  ))}
               </ul>
             ) : (
               <p className="text-gray-400">No participants have joined this mission yet. Be the first!</p>
@@ -222,21 +236,19 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           </div>
 
           <div className="mt-10 border-t border-gray-700 pt-6">
-      <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
-      
-      {isOwner && (
-        <AddTaskForm missionId={mission.id} />
-      )}
+            <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
+            
+            {isOwner && (
+              <AddTaskForm missionId={mission.id} />
+            )}
 
-      <TaskList
-        tasks={tasks}
-        missionId={mission.id}
-        currentUserId={currentUser?.id}
-        missionOwnerId={mission.owner?.id}
-      />
-    </div>
-
-
+            <TaskList
+              tasks={tasks}
+              missionId={mission.id}
+              currentUserId={currentUser?.id}
+              missionOwnerId={mission.owner?.id}
+            />
+          </div>
         </article>
       </main>
     </div>

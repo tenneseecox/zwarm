@@ -1,7 +1,6 @@
-// src/app/api/missions/[id]/tasks/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Ensure path
+import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
 import { z } from 'zod';
 
 const createTaskSchema = z.object({
@@ -10,7 +9,7 @@ const createTaskSchema = z.object({
 
 interface RouteContext {
   params: {
-    id: string; // This is missionId
+    missionId: string;
   };
 }
 
@@ -25,7 +24,7 @@ export async function POST(
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const missionId = context.params.id;
+  const missionId = context.params.missionId;
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
   }
@@ -77,4 +76,4 @@ export async function POST(
     console.error(`Error creating task for mission ${missionId}:`, error);
     return NextResponse.json({ error: 'Failed to create task.' }, { status: 500 });
   }
-}
+} 
