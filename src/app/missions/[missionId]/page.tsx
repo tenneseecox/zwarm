@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { DeleteMissionButton } from '@/components/DeleteMissionButton';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { TaskList } from '@/components/TaskList';
+import { EmojiAvatar } from '@/components/EmojiAvatar';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -116,13 +117,9 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
       <SwarmBackground />
       <Header /> {/* Ensure Header updates based on auth state if needed */}
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
-        <article className="max-w-3xl mx-auto glass-dark p-6 md:p-8 rounded-zwarm shadow-zwarm-dark">
+        <article className="max-w-3xl mx-auto glass-dark p-6 md:p-8 rounded-2xl shadow-zwarm-dark">
           <div className="flex items-start gap-4 mb-6">
-            {mission.emoji && (
-              <div className="text-5xl md:text-6xl bg-yellow-500 rounded-full p-3 w-20 h-20 md:w-24 md:h-24 flex items-center justify-center shadow-zwarm-glow border-2 border-yellow-100">
-                {mission.emoji}
-              </div>
-            )}
+            <EmojiAvatar emoji={mission.emoji} size="lg" />
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-yellow-400 mb-2 break-words">
                 {mission.title}
@@ -206,7 +203,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                     return new Date(a.joinedAt || '').getTime() - new Date(b.joinedAt || '').getTime();
                   })
                   .map((participant) => (
-                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
+                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-xl border border-gray-700/50">
                       <span className="text-2xl">
                         {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
                       </span>
@@ -239,15 +236,19 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
             
             {isOwner && (
-              <AddTaskForm missionId={mission.id} />
+              <div className="mb-6 rounded-xl overflow-hidden">
+                <AddTaskForm missionId={mission.id} />
+              </div>
             )}
 
-            <TaskList
-              tasks={tasks}
-              missionId={mission.id}
-              currentUserId={currentUser?.id}
-              missionOwnerId={mission.owner?.id}
-            />
+            <div className="rounded-xl overflow-hidden">
+              <TaskList
+                tasks={tasks}
+                missionId={mission.id}
+                currentUserId={currentUser?.id}
+                missionOwnerId={mission.owner?.id}
+              />
+            </div>
           </div>
         </article>
       </main>
