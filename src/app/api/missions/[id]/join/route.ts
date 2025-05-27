@@ -3,15 +3,16 @@ import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client'; // Adjust path if needed
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+// Keep the interface for clarity/documentation if you like, but don't use it directly in the function signature type.
+// interface RouteParams {
+//   params: {
+//     id: string;
+//   };
+// }
 
 export async function POST(
   request: NextRequest,
-  context: RouteParams // Apply the interface to the context parameter
+  { params }: { params: { id: string } } // Correctly type the second argument structure
 ) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -20,8 +21,8 @@ export async function POST(
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  // Access missionId from context.params
-  const missionId = context.params.id; // No await needed for params
+  // Access missionId directly from params object
+  const missionId = params.id; // Access from the destructured params
 
   if (!missionId) {
     return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
