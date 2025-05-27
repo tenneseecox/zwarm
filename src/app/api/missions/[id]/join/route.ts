@@ -1,19 +1,11 @@
-// src/app/api/missions/[id]/join/route.ts
+// src/app/api/missions/[id]/leave/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
-// Ensure this path is correct and the helper is correctly defined and exported
 import { createSupabaseRouteHandlerClient } from '@/utils/supabase/route-handler-client';
-
-// Define an interface for the context object passed as the second argument
-interface RouteContext {
-  params: {
-    id: string; // This corresponds to the [id] dynamic segment in your route
-  };
-}
 
 export async function POST(
   request: NextRequest,
-  context: RouteContext // Use the explicitly typed context object here
+  context: { params: { id: string } } // Apply the same signature
 ) {
   const supabase = await createSupabaseRouteHandlerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,35 +14,29 @@ export async function POST(
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  // Access 'id' from context.params
-  const missionId = context.params.id;
+  const missionId = context.params.id; // Access id from context.params
 
   if (!missionId) {
-    // This check is generally good practice, though Next.js usually ensures params.id is a string.
-    return NextResponse.json({ error: 'Mission ID is required in the path' }, { status: 400 });
+    return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
   }
 
+  // ... rest of your leave logic
   try {
-    const missionExists = await prisma.mission.findUnique({ where: { id: missionId } });
-    if (!missionExists) {
-      return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
-    }
-
     const existingParticipation = await prisma.missionParticipant.findUnique({
       where: { missionId_userId: { missionId, userId: user.id } },
     });
 
-    if (existingParticipation) {
-      return NextResponse.json({ message: 'You have already joined this mission.', participant: existingParticipation }, { status: 200 });
+    if (!existingParticipation) {
+      return NextResponse.json({ error: 'You are not a participant of this mission.' }, { status: 404 });
     }
 
-    const newParticipant = await prisma.missionParticipant.create({
-      data: { missionId, userId: user.id },
+    await prisma.missionParticipant.delete({
+      where: { missionId_userId: { missionId, userId: user.id } },
     });
 
-    return NextResponse.json({ message: 'Successfully joined mission!', participant: newParticipant }, { status: 201 });
+    return NextResponse.json({ message: 'Successfully left mission.' }, { status: 200 });
   } catch (error) {
-    console.error(`Error joining mission ${missionId} for user ${user.id}:`, error);
-    return NextResponse.json({ error: 'Failed to join mission.' }, { status: 500 });
+    console.error(`Error leaving mission ${missionId} for user ${user.id}:`, error);
+    return NextResponse.json({ error: 'Failed to leave mission.' }, { status: 500 });
   }
 }
