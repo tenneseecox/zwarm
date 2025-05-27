@@ -157,3 +157,53 @@ export async function PUT(
     return NextResponse.json({ error: 'Failed to update mission.' }, { status: 500 });
   }
 }
+
+// --- DELETE Handler: Delete an existing Mission ---
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const supabase = await createSupabaseRouteHandlerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+
+  const missionId = params.id;
+  if (!missionId) {
+    return NextResponse.json({ error: 'Mission ID is required' }, { status: 400 });
+  }
+
+  try {
+    // 1. Check if the mission exists and if the current user is the owner
+    const missionToDelete = await prisma.mission.findUnique({
+      where: { id: missionId },
+    });
+
+    if (!missionToDelete) {
+      return NextResponse.json({ error: 'Mission not found' }, { status: 404 });
+    }
+
+    if (missionToDelete.ownerId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: You are not the owner of this mission' }, { status: 403 });
+    }
+
+    // 2. Delete the mission
+    // Ensure cascade delete is set up in your Prisma schema for related MissionParticipant records
+    // (e.g., onDelete: Cascade on the relation in MissionParticipant model)
+    await prisma.mission.delete({
+      where: { id: missionId },
+    });
+
+    return NextResponse.json({ message: 'Mission deleted successfully' }, { status: 200 });
+    // Alternatively, return status 204 (No Content) which is common for DELETE
+    // return new NextResponse(null, { status: 204 });
+
+  } catch (error) {
+    console.error(`Error deleting mission ${missionId}:`, error);
+    // Handle potential Prisma errors, e.g., if related records prevent deletion
+    // without proper cascade rules.
+    return NextResponse.json({ error: 'Failed to delete mission.' }, { status: 500 });
+  }
+}

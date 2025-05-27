@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cookies } from 'next/headers';
 import { UserCircle } from 'lucide-react'; // Import UserCircle icon
 import Link from 'next/link';
+import { DeleteMissionButton } from '@/components/DeleteMissionButton';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -160,12 +161,13 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
 
 
           {isOwner && (
-  <div className="mt-6 mb-8 text-center sm:text-left"> {/* Added margin and text alignment */}
+  <div className="mt-6 mb-8 text-center sm:text-left flex gap-4"> {/* Added flex and gap */}
     <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
       <Link href={`/missions/${mission.id}/edit`}>
         ✏️ Edit Mission
       </Link>
     </Button>
+    <DeleteMissionButton missionId={mission.id} missionTitle={mission.title} />
   </div>
 )}  
 
