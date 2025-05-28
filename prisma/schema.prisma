@@ -31,6 +31,7 @@ model User {
   joinedMissions MissionParticipant[]
   createdTasks MissionTask[] @relation("TaskCreator")
   comments MissionComment[]
+  resources MissionResource[]
 }
 
 // Mission Model
@@ -50,6 +51,7 @@ model Mission {
   participants MissionParticipant[]
   tasks       MissionTask[]
   comments MissionComment[]
+  resources MissionResource[]
 
   @@index([ownerId]) 
 }
@@ -103,3 +105,20 @@ model MissionComment {
   @@index([userId])
 }
 
+model MissionResource {
+  id          String   @id @default(cuid())
+  title       String
+  url         String   @db.Text // URLs can be long
+  description String?  @db.Text
+  emoji       String?  // Optional emoji for the resource
+  createdAt   DateTime @default(now())
+
+  missionId String
+  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  userId String // User who added the resource
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade) // Or SetNull
+
+  @@index([missionId])
+  @@index([userId])
+}

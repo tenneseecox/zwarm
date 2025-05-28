@@ -13,6 +13,8 @@ import { TaskList } from '@/components/TaskList';
 import { EmojiAvatar } from '@/components/EmojiAvatar';
 import { AddCommentForm } from '@/components/AddCommentForm';
 import { CommentList }from '@/components/CommentList';
+import AddResourceForm from '@/components/AddResourceForm';
+import { ResourceList } from '@/components/ResourceList';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -65,6 +67,20 @@ interface CommentWithUser {
   // userId: string; // Already nested in user
 }
 
+interface MissionResourceData {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  createdAt: string; // Or Date
+  user: { // User who added it
+    id: string;
+    username: string | null;
+    emoji: string | null;
+  };
+  // missionId: string; // If needed
+}
+
 export interface DetailedMission {
   id: string;
   title: string;
@@ -82,6 +98,7 @@ export interface DetailedMission {
   participants?: MissionParticipantInfo[];
   tasks?: MissionTaskData[]; 
   comments?: CommentWithUser[];
+  resources?: MissionResourceData[]; 
 }
 
 async function getMissionDetails(missionId: string): Promise<DetailedMission | null> {
@@ -123,6 +140,8 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
     notFound();
   }
 
+  
+  const resources = mission.resources || [];
   const comments = mission.comments || [];
   const tasks = mission.tasks || [];
   const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
@@ -249,6 +268,23 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             
             <p className="text-gray-400 mt-6">More mission tools (tasks, discussions) will appear here soon!</p>
           </div>
+
+
+
+          {/* Resources Section - NEW */}
+          <div className="mt-10 border-t border-gray-700 pt-8">
+            <h2 className="text-2xl font-semibold text-white mb-6">
+              Mission Resources ({resources.length})
+            </h2>
+            {isOwner && (
+              <AddResourceForm missionId={mission.id} />
+            )}
+            <ResourceList resources={resources} missionId={mission.id} isOwner={isOwner} />
+          </div>
+
+
+
+
 
           <div className="mt-10 border-t border-gray-700 pt-6">
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>

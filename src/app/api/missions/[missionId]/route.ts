@@ -85,6 +85,15 @@ export async function GET(
               select: { id: true, username: true, emoji: true }
             }
           }
+        },
+
+        resources: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            user: { // User who added the resource
+              select: { id: true, username: true, emoji: true }
+            }
+          }
         }
       },
     });
