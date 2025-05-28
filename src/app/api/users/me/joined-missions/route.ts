@@ -87,10 +87,24 @@ export async function GET() {
     const joinedMissions = participations.map(p => transformMissionForCard(p.mission));
     
     // Filter out any potential null/empty results from transformMissionForCard if a participation pointed to a non-existent mission
-    return NextResponse.json(joinedMissions.filter(mission => mission.id !== ''), { status: 200 });
+    return NextResponse.json(joinedMissions.filter(mission => mission.id !== ''), { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
 
   } catch (error) {
     console.error("Error fetching joined missions for user:", user.id, error);
-    return NextResponse.json({ error: 'Failed to fetch joined missions.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch joined missions.' }, { 
+      status: 500,
+      headers: {
+        'Cache-Control': 'no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
   }
 }

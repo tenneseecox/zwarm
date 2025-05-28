@@ -7,54 +7,63 @@ import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
 import { MissionCard, type Mission as MissionCardType } from '@/components/MissionCard';
 import { Button } from '@/components/ui/button';
-import { cookies } from 'next/headers'; // Keep this for the initial page auth check
-import { getAbsoluteUrl } from '@/utils/site-url';
+import { cookies, headers } from 'next/headers'; // Keep this for the initial page auth check
 
 type DashboardMission = MissionCardType;
 
-async function fetchOwnedMissions(): Promise<DashboardMission[]> {
+async function fetchOwnedMissions(cookieStore: ReturnType<typeof cookies>): Promise<DashboardMission[]> {
   try {
-    const response = await fetch(getAbsoluteUrl('/api/users/me/owned-missions'), {
+    const headersList = await headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const response = await fetch(`${protocol}://${host}/api/users/me/owned-missions`, {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        'Pragma': 'no-cache',
+        'Cookie': cookieStore.toString()
       }
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch owned missions:", response.status, await response.text());
-      return [];
+      const errorText = await response.text();
+      console.error("Failed to fetch owned missions:", response.status, errorText);
+      throw new Error(`Failed to fetch owned missions: ${errorText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching owned missions:", error);
-    return [];
+    throw error; // Re-throw to handle in the component
   }
 }
 
-async function fetchJoinedMissions(): Promise<DashboardMission[]> {
+async function fetchJoinedMissions(cookieStore: ReturnType<typeof cookies>): Promise<DashboardMission[]> {
   try {
-    const response = await fetch(getAbsoluteUrl('/api/users/me/joined-missions'), {
+    const headersList = await headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const response = await fetch(`${protocol}://${host}/api/users/me/joined-missions`, {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        'Pragma': 'no-cache',
+        'Cookie': cookieStore.toString()
       }
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch joined missions:", response.status, await response.text());
-      return [];
+      const errorText = await response.text();
+      console.error("Failed to fetch joined missions:", response.status, errorText);
+      throw new Error(`Failed to fetch joined missions: ${errorText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching joined missions:", error);
-    return [];
+    throw error; // Re-throw to handle in the component
   }
 }
 
@@ -68,10 +77,19 @@ export default async function DashboardPage() {
     redirect('/sign-in?message=Please sign in to view your dashboard.');
   }
 
-  const [ownedMissions, joinedMissions] = await Promise.all([
-    fetchOwnedMissions(),
-    fetchJoinedMissions(),
-  ]);
+  let ownedMissions: DashboardMission[] = [];
+  let joinedMissions: DashboardMission[] = [];
+  let error: string | null = null;
+
+  try {
+    [ownedMissions, joinedMissions] = await Promise.all([
+      fetchOwnedMissions(cookieStore),
+      fetchJoinedMissions(cookieStore),
+    ]);
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'An error occurred while fetching missions';
+    console.error('Dashboard error:', error);
+  }
 
   return (
     <div className="min-h-screen bg-black-950 text-white">
@@ -88,6 +106,13 @@ export default async function DashboardPage() {
             </Button>
           </Link>
         </div>
+
+        {error && (
+          <div className="mb-8 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+            <p className="font-semibold">Error loading missions:</p>
+            <p>{error}</p>
+          </div>
+        )}
 
         {/* Missions You Own */}
         <section className="mb-12">

@@ -61,12 +61,32 @@ export async function GET() {
 
     if (authError) {
       console.error('Auth error in owned missions:', authError);
-      return NextResponse.json({ error: 'Authentication error' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Authentication error' }, 
+        { 
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        }
+      );
     }
 
     if (!user) {
       console.error('No user found in owned missions');
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Authentication required' }, 
+        { 
+          status: 401,
+          headers: {
+            'Cache-Control': 'no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        }
+      );
     }
 
     const ownedMissions = await prisma.mission.findMany({
@@ -90,13 +110,27 @@ export async function GET() {
       .filter((mission): mission is NonNullable<typeof mission> => mission !== null)
       .map(transformMissionForCard);
 
-    return NextResponse.json(transformedMissions, { status: 200 });
+    return NextResponse.json(transformedMissions, { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
 
   } catch (error) {
     console.error("Error fetching owned missions:", error);
     return NextResponse.json(
       { error: 'Failed to fetch owned missions' }, 
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
     );
   }
 }
