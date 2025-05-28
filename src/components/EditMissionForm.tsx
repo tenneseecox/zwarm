@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { TagInput } from '@/components/TagInput'; // Your existing TagInput
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { useState } from 'react';
+import { getAbsoluteUrl } from '@/utils/site-url';
 // Use the same Zod schema as your PUT API route, or a specific one for edits
 // For example, import { updateMissionSchema } from '@/lib/validators/mission'; (if you defined it there)
 
@@ -79,7 +80,7 @@ export function EditMissionForm({ mission }: EditMissionFormProps) {
 
   const onSubmit = async (data: UpdateMissionFormData) => {
     try {
-      const response = await fetch(`/api/missions/${mission.id}`, {
+      const response = await fetch(getAbsoluteUrl(`/api/missions/${mission.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

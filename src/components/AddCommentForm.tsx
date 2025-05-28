@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'; //
 import { Label } from '@/components/ui/label'; //
 import { toast } from 'sonner'; //
 import { useRouter } from 'next/navigation'; //
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 const commentSchema = z.object({
   content: z.string().min(1, "Comment cannot be empty.").max(1000, "Comment is too long."),
@@ -40,9 +41,9 @@ export function AddCommentForm({ missionId, currentUserId }: AddCommentFormProps
         toast.error("You must be logged in to comment.");
         return;
     }
-    startTransition(async () => { //
+    startTransition(async () => {
       try {
-        const response = await fetch(`/api/missions/${missionId}`, {
+        const response = await fetch(getAbsoluteUrl(`/api/missions/${missionId}`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -50,16 +51,15 @@ export function AddCommentForm({ missionId, currentUserId }: AddCommentFormProps
 
         if (!response.ok) {
           const errorData = await response.json();
-          toast.error(errorData.error || 'Failed to post comment.'); //
+          toast.error(errorData.error || 'Failed to post comment.');
           return;
         }
 
-        toast.success('Comment posted!'); //
-        reset(); //
-        router.refresh(); // Refresh the page to show the new comment //
-        // if (onCommentAdded) onCommentAdded();
+        toast.success('Comment posted!');
+        reset();
+        router.refresh();
       } catch (error) {
-        toast.error('An unexpected error occurred.'); //
+        toast.error('An unexpected error occurred.');
         console.error("Error posting comment:", error);
       }
     });

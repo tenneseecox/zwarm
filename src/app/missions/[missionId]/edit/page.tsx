@@ -6,17 +6,29 @@ import { Header } from '@/components/Header';
 import { SwarmBackground } from '@/components/SwarmBackground';
 import { EditMissionForm } from '@/components/EditMissionForm';
 import type { DetailedMission } from '../page';
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 interface EditMissionPageProps {
   params: { missionId: string };
 }
 
 async function getMissionForEdit(missionId: string): Promise<DetailedMission | null> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   try {
-    const response = await fetch(`${siteUrl}/api/missions/${missionId}`, { cache: 'no-store' });
-    if (!response.ok) return null;
-    return await response.json();
+    const response = await fetch(getAbsoluteUrl(`/api/missions/${missionId}`), {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch mission for edit:", response.status, await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error("Error fetching mission for edit:", error);
     return null;

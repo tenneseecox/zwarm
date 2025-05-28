@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label'; // Shadcn UI Label
 import { TagInput } from '@/components/TagInput'; // Your TagInput component
 import { createClient } from '@/utils/supabase/client'; // Adjust path as needed
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Header } from '@/components/Header';
@@ -82,10 +83,10 @@ export default function CreateMissionPage() {
 
   const onSubmit = async (data: CreateMissionFormData) => {
     try {
-      const response = await fetch('/api/missions', {
+      const response = await fetch(getAbsoluteUrl('/api/missions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data), // Send validated data
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -93,7 +94,7 @@ export default function CreateMissionPage() {
       if (!response.ok) {
         if (result.issues && Array.isArray(result.issues)) {
           result.issues.forEach((issue: { path: (string | number)[], message: string }) => {
-            const fieldName = issue.path.join('.') as keyof CreateMissionFormData; // Type assertion
+            const fieldName = issue.path.join('.') as keyof CreateMissionFormData;
             setError(fieldName, { type: 'server', message: issue.message });
           });
            toast.error("Please correct the errors in the form.");

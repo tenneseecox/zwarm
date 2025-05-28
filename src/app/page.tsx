@@ -3,6 +3,7 @@ import { MissionCard } from "@/components/MissionCard";
 import { Header } from "@/components/Header";
 import { SwarmBackground } from "@/components/SwarmBackground";
 import { Suspense } from "react";
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 interface MissionOwner {
   id: string;
@@ -26,32 +27,25 @@ interface Mission {
 }
 
 // Server Component for mission data
-async function getTrendingMissions() {
+async function getTrendingMissions(): Promise<Mission[]> {
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const response = await fetch(`${siteUrl}/api/missions`, {
+    const response = await fetch(getAbsoluteUrl('/api/missions'), {
       cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch missions:", response.status);
+      console.error("Failed to fetch trending missions:", response.status, await response.text());
       return [];
     }
 
-    const missions = await response.json() as Mission[];
-    return missions.map((mission) => ({
-      id: mission.id,
-      emoji: mission.emoji || '🎯',
-      title: mission.title,
-      description: mission.description,
-      contributors: mission._count?.participants || 0,
-      timeAgo: new Date(mission.createdAt).toLocaleDateString(),
-      owner: mission.owner,
-      tags: mission.tags || [],
-      status: mission.status
-    }));
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching missions:", error);
+    console.error("Error fetching trending missions:", error);
     return [];
   }
 }

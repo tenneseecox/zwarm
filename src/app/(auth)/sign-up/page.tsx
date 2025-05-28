@@ -3,6 +3,7 @@
 // Make sure this path correctly points to your Supabase browser client initialization function
 // e.g., import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { createClient } from "@/utils/supabase/client"; // Using your path for now
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -75,7 +76,7 @@ const handleSignUp = async () => {
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/callback`,
+        emailRedirectTo: getAbsoluteUrl('/callback'),
         data: userMetadata
       },
     });
