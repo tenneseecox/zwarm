@@ -12,6 +12,10 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  // Ensure Prisma client is properly handled
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma']
+  }
 }
 
 module.exports = nextConfig 
