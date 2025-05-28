@@ -4,6 +4,7 @@ import { MissionCard, type Mission as MissionCardType } from '@/components/Missi
 import { SwarmBackground } from '@/components/SwarmBackground';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 // Define a type for the mission data fetched from your API
 // This should align with what your /api/missions GET endpoint returns.
@@ -49,11 +50,12 @@ function formatTimeAgo(dateString: string | null): string {
 
 async function getMissions(): Promise<MissionCardType[]> { // Return type matches what MissionCard expects
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    // IMPORTANT: Ensure your /api/missions endpoint returns 'tags', 'createdAt',
-    // and data for 'contributors' (e.g., participantsCount or _count.participants)
-    const response = await fetch(`${siteUrl}/api/missions`, {
+    const response = await fetch(getAbsoluteUrl('/api/missions'), {
       cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
 
     if (!response.ok) {
@@ -75,7 +77,7 @@ async function getMissions(): Promise<MissionCardType[]> { // Return type matche
     }));
 
   } catch (error) {
-    console.error("Error in getMissions:", error);
+    console.error("Error fetching missions:", error);
     return [];
   }
 }

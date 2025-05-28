@@ -8,53 +8,52 @@ import { SwarmBackground } from '@/components/SwarmBackground';
 import { MissionCard, type Mission as MissionCardType } from '@/components/MissionCard';
 import { Button } from '@/components/ui/button';
 import { cookies } from 'next/headers'; // Keep this for the initial page auth check
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 type DashboardMission = MissionCardType;
 
 async function fetchOwnedMissions(): Promise<DashboardMission[]> {
-  const pageCookieStore = await cookies();
-  const cookieHeader = Array.from(pageCookieStore.getAll()).map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
   try {
-    const response = await fetch(`${siteUrl}/api/users/me/owned-missions`, {
+    const response = await fetch(getAbsoluteUrl('/api/users/me/owned-missions'), {
       cache: 'no-store',
       headers: {
-        'Cookie': cookieHeader,
-      },
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Failed to fetch owned missions (page):", response.status, errorText);
+      console.error("Failed to fetch owned missions:", response.status, await response.text());
       return [];
     }
-    return await response.json();
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error in fetchOwnedMissions (page catch block):", error);
+    console.error("Error fetching owned missions:", error);
     return [];
   }
 }
 
 async function fetchJoinedMissions(): Promise<DashboardMission[]> {
-  const pageCookieStore = await cookies();
-  const cookieHeader = Array.from(pageCookieStore.getAll()).map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
   try {
-    const response = await fetch(`${siteUrl}/api/users/me/joined-missions`, {
+    const response = await fetch(getAbsoluteUrl('/api/users/me/joined-missions'), {
       cache: 'no-store',
       headers: {
-        'Cookie': cookieHeader,
-      },
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     });
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Failed to fetch joined missions (page):", response.status, errorText);
+      console.error("Failed to fetch joined missions:", response.status, await response.text());
       return [];
     }
-    return await response.json();
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error in fetchJoinedMissions (page catch block):", error);
+    console.error("Error fetching joined missions:", error);
     return [];
   }
 }

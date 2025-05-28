@@ -75,7 +75,7 @@ const handleSignUp = async () => {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/callback`,
         data: userMetadata
       },
     });

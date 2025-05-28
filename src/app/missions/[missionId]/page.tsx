@@ -17,6 +17,7 @@ import { CommentList }from '@/components/CommentList';
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
 import { createClient } from '@/utils/supabase/server'; // Your Supabase server client helper
+import { getAbsoluteUrl } from '@/utils/site-url';
 
 interface MissionDetailPageProps {
   params: {
@@ -85,8 +86,7 @@ export interface DetailedMission {
 
 async function getMissionDetails(missionId: string): Promise<DetailedMission | null> {
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const response = await fetch(`${siteUrl}/api/missions/${missionId}`, {
+    const response = await fetch(getAbsoluteUrl(`/api/missions/${missionId}`), {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
