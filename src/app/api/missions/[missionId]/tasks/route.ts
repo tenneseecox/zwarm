@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 const createTaskSchema = z.object({
   text: z.string().min(1, "Task text cannot be empty.").max(500, "Task text can be at most 500 characters."),
+  emoji: z.string().optional(),
 });
 
 interface RouteContext {
@@ -60,6 +61,7 @@ export async function POST(
     const newTask = await prisma.missionTask.create({
       data: {
         text: validatedData.text,
+        emoji: validatedData.emoji,
         missionId: missionId,
         creatorId: user.id,
         // isCompleted defaults to false as per schema

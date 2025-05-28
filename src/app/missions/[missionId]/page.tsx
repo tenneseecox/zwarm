@@ -31,6 +31,7 @@ interface TaskCreator {
 export interface MissionTaskData {
   id: string;
   text: string;
+  emoji: string | null;
   isCompleted: boolean;
   createdAt: string; // Or Date, depending on API transformation
   creator: TaskCreator;
@@ -177,7 +178,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           </div>
 
           {isOwner && (
-            <div className="mt-6 mb-8 text-center sm:text-left flex gap-4"> {/* Added flex and gap */}
+            <div className="mt-6 mb-8 text-center sm:text-left flex gap-4">
               <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
                 <Link href={`/missions/${mission.id}/edit`}>
                   ✏️ Edit Mission
@@ -203,7 +204,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                     return new Date(a.joinedAt || '').getTime() - new Date(b.joinedAt || '').getTime();
                   })
                   .map((participant) => (
-                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-xl border border-gray-700/50">
+                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
                       <span className="text-2xl">
                         {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
                       </span>
@@ -236,12 +237,12 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
             <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
             
             {isOwner && (
-              <div className="mb-6 rounded-xl overflow-hidden">
+              <div className="mb-6">
                 <AddTaskForm missionId={mission.id} />
               </div>
             )}
 
-            <div className="rounded-xl overflow-hidden">
+            <div>
               <TaskList
                 tasks={tasks}
                 missionId={mission.id}
