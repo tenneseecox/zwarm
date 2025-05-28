@@ -3,8 +3,9 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const errorMessage = searchParams.get('message') || "An unknown authentication error occurred.";
 
@@ -22,5 +23,19 @@ export default function AuthErrorPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div className="glass-dark p-8 rounded-zwarm shadow-zwarm-dark max-w-md w-full">
+          <h1 className="text-3xl font-bold text-red-500 mb-4">Loading...</h1>
+        </div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
