@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { MissionCard } from "@/components/MissionCard";
+import { MissionCard, type Mission as MissionCardType } from "@/components/MissionCard";
 import { Header } from "@/components/Header";
 import { SwarmBackground } from "@/components/SwarmBackground";
 import { Suspense } from "react";
 import { getAbsoluteUrl } from '@/utils/site-url';
+import { formatTimeAgo } from '@/utils/time-helpers';
 
 interface MissionOwner {
   id: string;
@@ -23,6 +24,20 @@ interface Mission {
   tags: string[];
   _count: {
     participants: number;
+  };
+}
+
+// Transform API mission to MissionCard props
+function transformMissionForCard(mission: Mission): MissionCardType {
+  return {
+    id: mission.id,
+    title: mission.title,
+    description: mission.description,
+    emoji: mission.emoji || '❓',
+    tags: mission.tags || [],
+    contributors: mission._count?.participants ?? 0,
+    timeAgo: formatTimeAgo(new Date(mission.createdAt)),
+    status: mission.status,
   };
 }
 
@@ -52,6 +67,7 @@ async function getTrendingMissions(): Promise<Mission[]> {
 
 export default async function Home() {
   const missions = await getTrendingMissions();
+  const transformedMissions = missions.map(transformMissionForCard);
 
   return (
     <div className="min-h-screen bg-black-950">
@@ -105,7 +121,7 @@ export default async function Home() {
         <section className="max-w-6xl mx-auto mb-16">
           <h2 className="text-2xl font-bold mb-6 text-white">🔥 Trending Missions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {missions.map((mission) => (
+            {transformedMissions.map((mission) => (
               <MissionCard
                 key={mission.id}
                 {...mission}
