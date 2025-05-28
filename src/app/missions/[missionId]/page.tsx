@@ -11,6 +11,8 @@ import { DeleteMissionButton } from '@/components/DeleteMissionButton';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { TaskList } from '@/components/TaskList';
 import { EmojiAvatar } from '@/components/EmojiAvatar';
+import { AddCommentForm } from '@/components/AddCommentForm';
+import { CommentList }from '@/components/CommentList';
 
 // Import the new components and helpers
 import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
@@ -49,6 +51,19 @@ interface MissionParticipantInfo { // Define a type for each item in the partici
   user: ParticipantUser;
 }
 
+interface CommentWithUser {
+  id: string;
+  content: string;
+  createdAt: string; // Or Date, adjust based on how you handle dates
+  user: {
+    id: string;
+    username: string | null;
+    emoji: string | null;
+  };
+  missionId: string;
+  // userId: string; // Already nested in user
+}
+
 export interface DetailedMission {
   id: string;
   title: string;
@@ -65,6 +80,7 @@ export interface DetailedMission {
   currentUserIsParticipant?: boolean;
   participants?: MissionParticipantInfo[];
   tasks?: MissionTaskData[]; 
+  comments?: CommentWithUser[];
 }
 
 async function getMissionDetails(missionId: string): Promise<DetailedMission | null> {
@@ -107,6 +123,7 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
     notFound();
   }
 
+  const comments = mission.comments || [];
   const tasks = mission.tasks || [];
   const isOwner = !!currentUser && mission.owner?.id === currentUser.id;
   const participantCount = mission._count?.participants ?? 0;
@@ -250,6 +267,15 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                 missionOwnerId={mission.owner?.id}
               />
             </div>
+          </div>
+
+          {/* Comments Section - NEW */}
+          <div className="mt-10 border-t border-gray-700 pt-8">
+            <h2 className="text-2xl font-semibold text-white mb-6">
+              Mission Log & Discussion ({comments.length})
+            </h2>
+            <AddCommentForm missionId={mission.id} currentUserId={currentUser?.id} />
+            <CommentList comments={comments} currentUserId={currentUser?.id} />
           </div>
         </article>
       </main>

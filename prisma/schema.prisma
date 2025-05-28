@@ -30,6 +30,7 @@ model User {
   ownedMissions Mission[] @relation("MissionOwner") 
   joinedMissions MissionParticipant[]
   createdTasks MissionTask[] @relation("TaskCreator")
+  comments MissionComment[]
 }
 
 // Mission Model
@@ -48,6 +49,7 @@ model Mission {
   tags        String[] @default([]) 
   participants MissionParticipant[]
   tasks       MissionTask[]
+  comments MissionComment[]
 
   @@index([ownerId]) 
 }
@@ -85,4 +87,19 @@ model MissionTask {
 }
 
 
+model MissionComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  missionId String
+  mission   Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([missionId])
+  @@index([userId])
+}
 
