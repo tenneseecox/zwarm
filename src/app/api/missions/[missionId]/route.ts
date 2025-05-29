@@ -105,10 +105,17 @@ export async function GET(
     // Add current user's participation status
     const currentUserIsParticipant = user ? mission.participants.some(p => p.userId === user.id) : false;
 
-    return NextResponse.json({
+    // Transform the mission data to include the correct participant information
+    const transformedMission = {
       ...mission,
       currentUserIsParticipant,
-    });
+      participants: mission.participants.map(p => ({
+        joinedAt: p.joinedAt,
+        user: p.user
+      }))
+    };
+
+    return NextResponse.json(transformedMission);
   } catch (error) {
     console.error(`Error fetching mission ${missionId}:`, error);
     return NextResponse.json({ error: 'Failed to fetch mission.' }, { status: 500 });

@@ -73,7 +73,15 @@ export function JoinLeaveButton({ missionId, initialIsJoined, isOwner, isLoggedI
   };
 
   if (isOwner) {
-    return <Button variant="outline" disabled className="w-full sm:w-auto">You are the owner</Button>;
+    return (
+      <Button 
+        variant="outline" 
+        disabled 
+        className="w-full sm:w-auto border-yellow-500/50 text-yellow-400/50 cursor-not-allowed"
+      >
+        You are the owner
+      </Button>
+    );
   }
 
   const buttonVariant = isJoined ? 'destructive' : 'default';
@@ -86,10 +94,11 @@ export function JoinLeaveButton({ missionId, initialIsJoined, isOwner, isLoggedI
       onClick={handleClick}
       disabled={isPending || !isLoggedIn}
       variant={buttonVariant}
-      className={`w-full sm:w-auto ${
-        !isLoggedIn ? 'bg-gray-500 cursor-not-allowed' :
-        isJoined ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-      } text-white transition-colors duration-150`}
+      className={`w-full sm:w-auto transition-all duration-300 ${
+        !isLoggedIn ? 'bg-gray-500/50 cursor-not-allowed' :
+        isJoined ? 'bg-red-600 hover:bg-red-700' : 
+        'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold'
+      }`}
     >
       {buttonText}
     </Button>

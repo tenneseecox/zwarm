@@ -62,11 +62,16 @@ export default async function EditMissionPage({ params }: EditMissionPageProps) 
       <SwarmBackground />
       <Header />
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
-        <div className="max-w-2xl mx-auto glass-dark p-6 md:p-8 rounded-zwarm shadow-zwarm-dark">
-          <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-yellow-400">
-            Edit Your Mission
-          </h1>
-          <EditMissionForm mission={mission} />
+        <div className="max-w-2xl mx-auto">
+          <div className="glass-dark rounded-2xl p-8 shadow-zwarm-dark border border-yellow-500/10 hover:border-yellow-500/20 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-8">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                Edit Your Mission
+              </h1>
+              <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
+            </div>
+            <EditMissionForm mission={mission} />
+          </div>
         </div>
       </main>
     </div>

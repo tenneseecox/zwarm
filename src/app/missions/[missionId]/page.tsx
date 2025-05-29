@@ -5,20 +5,16 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cookies } from 'next/headers';
-import { UserCircle } from 'lucide-react'; // Import UserCircle icon
 import Link from 'next/link';
 import { DeleteMissionButton } from '@/components/DeleteMissionButton';
 import { AddTaskForm } from '@/components/AddTaskForm';
 import { TaskList } from '@/components/TaskList';
-import { EmojiAvatar } from '@/components/EmojiAvatar';
 import { AddCommentForm } from '@/components/AddCommentForm';
-import { CommentList }from '@/components/CommentList';
+import { CommentList } from '@/components/CommentList';
 import AddResourceForm from '@/components/AddResourceForm';
 import { ResourceList } from '@/components/ResourceList';
-
-// Import the new components and helpers
-import { JoinLeaveButton } from '@/components/JoinLeaveButton'; // Adjust path if needed
-import { createClient } from '@/utils/supabase/server'; // Your Supabase server client helper
+import { JoinLeaveButton } from '@/components/JoinLeaveButton';
+import { createClient } from '@/utils/supabase/server';
 import { getAbsoluteUrl } from '@/utils/site-url';
 
 interface MissionDetailPageProps {
@@ -128,8 +124,6 @@ async function getMissionDetails(missionId: string): Promise<DetailedMission | n
 
 export default async function MissionDetailPage({ params }: MissionDetailPageProps) {
   const { missionId } = await params;
-
-  // Fetch current user on the server to determine ownership and pass login status
   const cookieStore = cookies();
   const supabase = await createClient(cookieStore);
   const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -140,7 +134,6 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
     notFound();
   }
 
-  
   const resources = mission.resources || [];
   const comments = mission.comments || [];
   const tasks = mission.tasks || [];
@@ -152,59 +145,78 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
   return (
     <div className="min-h-screen bg-black-950 text-white">
       <SwarmBackground />
-      <Header /> {/* Ensure Header updates based on auth state if needed */}
+      <Header />
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
-        <article className="max-w-3xl mx-auto glass-dark p-6 md:p-8 rounded-2xl shadow-zwarm-dark">
-          <div className="flex items-start gap-4 mb-6">
-            <EmojiAvatar emoji={mission.emoji} size="lg" />
+        <article className="max-w-3xl mx-auto glass-dark rounded-2xl p-8 shadow-zwarm-dark border border-yellow-500/10 hover:border-yellow-500/20 transition-all duration-300">
+          <div className="flex items-start gap-6 mb-8">
+            <div className="text-4xl bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-4 w-16 h-16 flex items-center justify-center shadow-zwarm-glow border-2 border-yellow-100 transform hover:scale-105 transition-transform duration-300">
+              {mission.emoji || '❓'}
+            </div>
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-yellow-400 mb-2 break-words">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent mb-3 break-words">
                 {mission.title}
               </h1>
-              <div className="flex items-center gap-2 text-sm text-gray-400 mb-1">
-                <span>Owned by: {mission.owner?.username || 'Unknown User'} {mission.owner?.emoji}</span>
+              <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                <span>Owned by: </span>
+                {mission.owner ? (
+                  <Link 
+                    href={`/profile/${mission.owner.id}`}
+                    className="flex items-center gap-1.5 hover:text-yellow-400 transition-colors duration-300"
+                  >
+                    <span>{mission.owner.username || 'Anonymous User'}</span>
+                    <span className="text-lg">{mission.owner.emoji}</span>
+                  </Link>
+                ) : (
+                  <span>Unknown User</span>
+                )}
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-400 mb-1">
-                <span>Status: </span>
-                <Badge
-                  variant={mission.status === 'OPEN' ? 'default' : mission.status === 'COMPLETED' ? 'secondary' : 'outline'}
-                  className={
-                    mission.status === 'OPEN' ? 'bg-green-600 text-white' :
-                    mission.status === 'COMPLETED' ? 'bg-blue-600 text-white' :
-                    'border-gray-600 text-gray-300'
-                  }
-                >
-                  {mission.status}
-                </Badge>
-                <span>| Created: {new Date(mission.createdAt).toLocaleDateString()}</span>
-              </div>
-              {/* Display Participant Count */}
-              <div className="text-sm text-gray-400 mb-3">
-                <span>Participants: {participantCount}</span>
-              </div>
-
-              {/* Display Tags */}
-              {mission.tags && mission.tags.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tags:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {mission.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="border-yellow-500 text-yellow-400">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/50"></span>
+                  <Badge
+                    variant="secondary"
+                    className={
+                      mission.status === 'OPEN' ? 'bg-green-600/20 text-green-400' :
+                      mission.status === 'COMPLETED' ? 'bg-blue-600/20 text-blue-400' :
+                      'bg-gray-600/20 text-gray-400'
+                    }
+                  >
+                    {mission.status}
+                  </Badge>
                 </div>
-              )}
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-500/50"></span>
+                  <span>Created: {new Date(mission.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-500/50"></span>
+                  <span>{participantCount} participants</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="prose prose-invert prose-lg max-w-none text-gray-300 leading-relaxed mb-8">
-            <p>{mission.description}</p>
+          {mission.tags && mission.tags.length > 0 && (
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {mission.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="bg-yellow-500/20 text-yellow-400"
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="prose prose-invert max-w-none mb-8">
+            <p className="text-gray-300 whitespace-pre-wrap">{mission.description}</p>
           </div>
 
-          {/* Join/Leave Button Area */}
-          <div className="mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <JoinLeaveButton
               missionId={mission.id}
               initialIsJoined={currentUserIsParticipant}
@@ -214,88 +226,74 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
           </div>
 
           {isOwner && (
-            <div className="mt-6 mb-8 text-center sm:text-left flex gap-4">
-              <Button asChild variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <Button
+                asChild
+                variant="outline"
+                className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 transition-all duration-300"
+              >
                 <Link href={`/missions/${mission.id}/edit`}>
                   ✏️ Edit Mission
                 </Link>
               </Button>
               <DeleteMissionButton missionId={mission.id} missionTitle={mission.title} />
             </div>
-          )}  
+          )}
 
           {/* Mission Control / Participants Section */}
-          <div className="mt-10 border-t border-gray-700 pt-6">
-            <h2 className="text-2xl font-semibold text-white mb-4">Mission Control</h2>
+          <div className="mt-10 border-t border-yellow-500/10 pt-8">
+            <div className="flex items-center gap-3 mb-8">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                Mission Control
+              </h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
+            </div>
             
-            <h3 className="text-xl font-semibold text-yellow-400 mb-3">Participants ({participantCount})</h3>
-            {participantsList.length > 0 ? (
-              <ul className="space-y-3">
-                {participantsList
-                  .sort((a, b) => {
-                    // Put current user at the top
-                    if (a.user.id === currentUser?.id) return -1;
-                    if (b.user.id === currentUser?.id) return 1;
-                    // Then sort by join date
-                    return new Date(a.joinedAt || '').getTime() - new Date(b.joinedAt || '').getTime();
-                  })
-                  .map((participant) => (
-                    <li key={participant.user.id} className="flex items-center gap-3 p-3 bg-black-900/50 rounded-lg border border-gray-700/50">
-                      <span className="text-2xl">
-                        {participant.user.emoji || <UserCircle className="h-6 w-6 text-gray-400" />}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-200 font-medium">
-                          {participant.user.username || 'Anonymous Participant'}
-                        </span>
-                        {participant.user.id === currentUser?.id && (
-                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                            YOU
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-yellow-400 mb-4">Participants ({participantCount})</h3>
+              {participantsList.length > 0 ? (
+                <ul className="space-y-3">
+                  {participantsList
+                    .sort((a, b) => {
+                      // Put current user first
+                      if (currentUser && a.user.id === currentUser.id) return -1;
+                      if (currentUser && b.user.id === currentUser.id) return 1;
+                      // Then sort by join date
+                      return new Date(a.joinedAt || '').getTime() - new Date(b.joinedAt || '').getTime();
+                    })
+                    .map((participant) => (
+                      <li
+                        key={participant.user.id}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-black-500/20 border border-yellow-500/10"
+                      >
+                        <span className="text-2xl">{participant.user.emoji}</span>
+                        <Link
+                          href={`/profile/${participant.user.id}`}
+                          className="flex-1 text-gray-300 hover:text-yellow-400 transition-colors duration-300"
+                        >
+                          {participant.user.username || 'Anonymous User'}
+                        </Link>
+                        {currentUser && participant.user.id === currentUser.id && (
+                          <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
+                            You
                           </Badge>
                         )}
-                      </div>
-                      {participant.joinedAt && (
-                        <span className="text-xs text-gray-500 ml-auto">
-                          Joined: {new Date(participant.joinedAt).toLocaleDateString()}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400">No participants have joined this mission yet. Be the first!</p>
-            )}
-            
-            <p className="text-gray-400 mt-6">More mission tools (tasks, discussions) will appear here soon!</p>
-          </div>
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <p className="text-gray-400 italic">No participants yet.</p>
+              )}
+            </div>
 
-
-
-          {/* Resources Section - NEW */}
-          <div className="mt-10 border-t border-gray-700 pt-8">
-            <h2 className="text-2xl font-semibold text-white mb-6">
-              Mission Resources ({resources.length})
-            </h2>
-            {isOwner && (
-              <AddResourceForm missionId={mission.id} />
-            )}
-            <ResourceList resources={resources} missionId={mission.id} isOwner={isOwner} />
-          </div>
-
-
-
-
-
-          <div className="mt-10 border-t border-gray-700 pt-6">
-            <h2 className="text-2xl font-semibold text-white mb-4">Mission Tasks</h2>
-            
-            {isOwner && (
-              <div className="mb-6">
-                <AddTaskForm missionId={mission.id} />
-              </div>
-            )}
-
-            <div>
+            {/* Tasks Section */}
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-yellow-400 mb-4">Tasks</h3>
+              {currentUser && (
+                <div className="mb-6">
+                  <AddTaskForm missionId={mission.id} />
+                </div>
+              )}
               <TaskList
                 tasks={tasks}
                 missionId={mission.id}
@@ -303,15 +301,32 @@ export default async function MissionDetailPage({ params }: MissionDetailPagePro
                 missionOwnerId={mission.owner?.id}
               />
             </div>
-          </div>
 
-          {/* Comments Section - NEW */}
-          <div className="mt-10 border-t border-gray-700 pt-8">
-            <h2 className="text-2xl font-semibold text-white mb-6">
-              Mission Log & Discussion ({comments.length})
-            </h2>
-            <AddCommentForm missionId={mission.id} currentUserId={currentUser?.id} />
-            <CommentList comments={comments} currentUserId={currentUser?.id} />
+            {/* Comments Section */}
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-yellow-400 mb-4">Comments</h3>
+              {currentUser && (
+                <div className="mb-6">
+                  <AddCommentForm missionId={mission.id} currentUserId={currentUser.id} />
+                </div>
+              )}
+              <CommentList comments={comments} currentUserId={currentUser?.id} />
+            </div>
+
+            {/* Resources Section */}
+            <div>
+              <h3 className="text-xl font-semibold text-yellow-400 mb-4">Resources</h3>
+              {currentUser && (
+                <div className="mb-6">
+                  <AddResourceForm missionId={mission.id} />
+                </div>
+              )}
+              <ResourceList
+                resources={resources}
+                missionId={mission.id}
+                isOwner={isOwner}
+              />
+            </div>
           </div>
         </article>
       </main>

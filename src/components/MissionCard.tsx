@@ -3,7 +3,7 @@
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge"; // Import the Badge component
+import { Badge } from "@/components/ui/badge";
 
 export interface Mission {
   id: string;
@@ -29,6 +29,7 @@ export function MissionCard({
   contributors,
   timeAgo,
   tags, // <-- Destructure tags
+  status,
   onClick,
 }: MissionCardProps) {
   const router = useRouter();
@@ -46,7 +47,7 @@ export function MissionCard({
 
   return (
     <div
-      className="glass-dark rounded-[var(--zwarm-radius)] p-6 flex flex-col gap-4 transition-all hover:scale-105 hover:shadow-zwarm-yellow-glow focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:outline-none cursor-pointer border-2 border-transparent hover:border-[var(--zwarm-yellow)]"
+      className="glass-dark rounded-2xl p-6 flex flex-col gap-4 transition-all duration-300 hover:scale-105 hover:shadow-zwarm-glow focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:outline-none cursor-pointer border border-yellow-500/10 hover:border-yellow-500/20"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -56,31 +57,65 @@ export function MissionCard({
         }
       }}
     >
-      <div className="text-3xl bg-[var(--zwarm-yellow)] rounded-full p-3 w-14 h-14 flex items-center justify-center shadow-[var(--zwarm-shadow-glow)] border-2 border-[#fffbe6] transition-transform group-hover:rotate-[-8deg] group-hover:scale-110">
-        {emoji}
+      <div className="flex items-start gap-4">
+        <div className="text-3xl bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-3 w-14 h-14 flex items-center justify-center shadow-zwarm-glow border-2 border-yellow-100 transform hover:scale-105 transition-transform duration-300">
+          {emoji}
+        </div>
+        <div className="flex-1">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent line-clamp-2">
+            {title}
+          </h3>
+          {status && (
+            <Badge
+              variant="secondary"
+              className={`mt-2 ${
+                status === 'OPEN' ? 'bg-green-600/20 text-green-400' :
+                status === 'COMPLETED' ? 'bg-blue-600/20 text-blue-400' :
+                'bg-gray-600/20 text-gray-400'
+              }`}
+            >
+              {status}
+            </Badge>
+          )}
+        </div>
       </div>
-      <h3 className="text-xl font-bold text-white line-clamp-2">{title}</h3>
-      <p className="text-gray-300 leading-relaxed text-sm line-clamp-3 flex-grow">{summary}</p>
+
+      <p className="text-gray-300 leading-relaxed text-sm line-clamp-3 flex-grow">
+        {summary}
+      </p>
 
       {/* Display Tags */}
       {tags && tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {tags.slice(0, 3).map((tag) => ( // Show up to 3 tags
-            <Badge key={tag} variant="outline" className="text-xs border-yellow-500 text-yellow-400 px-2 py-0.5">
+        <div className="flex flex-wrap gap-2">
+          {tags.slice(0, 3).map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 transition-all duration-300 rounded-full px-3 py-1 text-xs font-medium border border-yellow-500/20"
+            >
               {tag}
             </Badge>
           ))}
           {tags.length > 3 && (
-             <Badge variant="outline" className="text-xs border-gray-600 text-gray-400 px-2 py-0.5">
-               +{tags.length - 3} more
-             </Badge>
+            <Badge
+              variant="secondary"
+              className="bg-gray-500/10 text-gray-400 rounded-full px-3 py-1 text-xs font-medium border border-gray-500/20"
+            >
+              +{tags.length - 3} more
+            </Badge>
           )}
         </div>
       )}
 
-      <div className="flex gap-3 mt-auto pt-3 text-[var(--zwarm-blue)] font-bold text-sm border-t border-gray-700/50"> {/* Added border-t */}
-        <span>🧑‍💻 {contributors}</span>
-        <span>⏱️ {timeAgo}</span>
+      <div className="flex items-center gap-4 mt-auto pt-3 text-sm border-t border-yellow-500/10">
+        <span className="flex items-center gap-1.5 text-yellow-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500/50"></span>
+          {contributors} contributors
+        </span>
+        <span className="flex items-center gap-1.5 text-gray-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-gray-500/50"></span>
+          {timeAgo}
+        </span>
       </div>
     </div>
   );

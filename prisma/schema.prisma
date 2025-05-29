@@ -24,6 +24,8 @@ model User {
   email     String  @unique
   username  String?  @unique 
   emoji     String?  
+  bio       String?  @db.Text // Add bio field
+  skills    String[] @default([]) // Add skills array
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 

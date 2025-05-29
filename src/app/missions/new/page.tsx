@@ -117,7 +117,9 @@ export default function CreateMissionPage() {
     return (
       <div className="min-h-screen bg-black-950 flex flex-col items-center justify-center text-white">
         <SwarmBackground />
-        <p>Loading and checking authentication...</p>
+        <div className="glass-dark rounded-2xl p-8 border border-yellow-500/10">
+          <p className="text-lg text-gray-300">Loading and checking authentication...</p>
+        </div>
       </div>
     );
   }
@@ -127,119 +129,117 @@ export default function CreateMissionPage() {
       <SwarmBackground />
       <Header />
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
-        <div className="max-w-2xl mx-auto glass-dark p-6 md:p-8 rounded-zwarm shadow-zwarm-dark">
-          <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-yellow-400">
-            Launch a New Mission
-          </h1>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Title Field */}
-            <div>
-              <Label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">Mission Title</Label>
-              <Controller
-                name="title"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    id="title"
-                    {...field}
-                    placeholder="e.g., Open Source AI Detector"
-                    className="bg-black-800 border-gray-700 text-white placeholder-gray-500 focus:ring-yellow-500 focus:border-yellow-500"
-                    disabled={isSubmitting}
-                  />
-                )}
-              />
-              {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+        <div className="max-w-2xl mx-auto">
+          <div className="glass-dark rounded-2xl p-8 shadow-zwarm-dark border border-yellow-500/10 hover:border-yellow-500/20 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-8">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                Launch a New Mission
+              </h1>
+              <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
             </div>
 
-            {/* Description Field */}
-            <div>
-              <Label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">Mission Description</Label>
-              <Controller
-                name="description"
-                control={control}
-                render={({ field }) => (
-                  <Textarea
-                    id="description"
-                    {...field}
-                    placeholder="Describe the goals, scope, and how others can contribute..."
-                    rows={6}
-                    className="bg-black-800 border-gray-700 text-white placeholder-gray-500 focus:ring-yellow-500 focus:border-yellow-500"
-                    disabled={isSubmitting}
-                  />
-                )}
-              />
-              {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
-            </div>
-
-            {/* Emoji Field */}
-            <div>
-              <Label className="block text-sm font-medium text-gray-300 mb-1">Mission Emoji</Label>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-2 border-gray-700 hover:bg-gray-800"
-                  disabled={isSubmitting}
-                >
-                  <span className="text-3xl">{selectedEmoji || '🎯'}</span>
-                </Button>
-                {showEmojiPicker && (
-                  <div className="absolute z-20 mt-2 bg-black-900 rounded-lg shadow-xl border border-gray-700">
-                    <EmojiPicker
-                      onEmojiClick={handleEmojiClick}
-                      theme={Theme.DARK}
-                      lazyLoadEmojis={true}
-                      width={320}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              {/* Title Field */}
+              <div>
+                <Label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">Mission Title</Label>
+                <Controller
+                  name="title"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      id="title"
+                      {...field}
+                      placeholder="e.g., Open Source AI Detector"
+                      className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
+                      disabled={isSubmitting}
                     />
-                  </div>
-                )}
-                <span className="text-gray-400 text-sm">Choose an emoji!</span>
+                  )}
+                />
+                {errors.title && <p className="text-sm text-red-400 mt-2">{errors.title.message}</p>}
               </div>
-              {errors.emoji && <p className="text-sm text-red-500 mt-1">{errors.emoji.message}</p>}
-            </div>
 
-            {/* Tags Field */}
-            <div>
-              <Label htmlFor="tags" className="block text-sm font-medium text-gray-300 mb-1">
-                Tags (Max 5, e.g., &apos;activism&apos;, &apos;tech-for-good&apos;)
-              </Label>
-              <Controller
-                name="tags"
-                control={control}
-                render={({ field }) => (
-                  <TagInput
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder="Type a tag and press Enter..."
-                    maxTags={5} // Corresponds to Zod schema
-                    maxTagLength={25} // Corresponds to Zod schema
-                    validateTag={(tag: string) => /^[a-zA-Z0-9-]+$/.test(tag) && tag.length > 0 && tag.length <= 25} // Example validation
-                    // Ensure your TagInput component's internal validation aligns or relies on what RHF passes
-                  />
-                )}
-              />
-              {/* Displaying general tags error (e.g., "max 5 tags") */}
-              {errors.tags && typeof errors.tags.message === 'string' && (
-                  <p className="text-sm text-red-500 mt-1">{errors.tags.message}</p>
+              {/* Description Field */}
+              <div>
+                <Label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">Mission Description</Label>
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      id="description"
+                      {...field}
+                      placeholder="Describe the goals, scope, and how others can contribute..."
+                      rows={6}
+                      className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
+                      disabled={isSubmitting}
+                    />
+                  )}
+                />
+                {errors.description && <p className="text-sm text-red-400 mt-2">{errors.description.message}</p>}
+              </div>
+
+              {/* Emoji Field */}
+              <div>
+                <Label className="block text-sm font-medium text-gray-300 mb-2">Mission Emoji</Label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="p-3 border-yellow-500/20 hover:bg-yellow-500/10 rounded-xl transition-all duration-300"
+                    disabled={isSubmitting}
+                  >
+                    <span className="text-3xl">{selectedEmoji || '🎯'}</span>
+                  </Button>
+                  {showEmojiPicker && (
+                    <div className="absolute z-20 mt-2 bg-black-900 rounded-xl shadow-xl border border-yellow-500/20">
+                      <EmojiPicker
+                        onEmojiClick={handleEmojiClick}
+                        theme={Theme.DARK}
+                        lazyLoadEmojis={true}
+                        width={320}
+                      />
+                    </div>
+                  )}
+                  <span className="text-gray-400 text-sm">Choose an emoji!</span>
+                </div>
+                {errors.emoji && <p className="text-sm text-red-400 mt-2">{errors.emoji.message}</p>}
+              </div>
+
+              {/* Tags Field */}
+              <div>
+                <Label className="block text-sm font-medium text-gray-300 mb-2">Tags</Label>
+                <Controller
+                  name="tags"
+                  control={control}
+                  render={({ field }) => (
+                    <TagInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Type a tag and press Enter..."
+                      className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
+                    />
+                  )}
+                />
+                {errors.tags && <p className="text-sm text-red-400 mt-2">{errors.tags.message}</p>}
+              </div>
+
+              {errors.root?.serverError && (
+                <div className="p-4 bg-red-900/20 border border-red-500/50 rounded-xl text-red-200">
+                  <p className="font-semibold">Error:</p>
+                  <p>{errors.root.serverError.message}</p>
+                </div>
               )}
-              {/* Displaying errors for individual tags if your Zod schema and API return them that way */}
-              {Array.isArray(errors.tags) && errors.tags.map((tagError: { message: string }, index: number) => (
-                  tagError && <p key={index} className="text-sm text-red-500 mt-1">Tag {index + 1}: {tagError.message}</p>
-              ))}
-            </div>
-            
-            {/* Root Server Error */}
-            {errors.root?.serverError && <p className="text-sm text-red-500 mt-1">{errors.root.serverError.message}</p>}
 
-            <Button
-              type="submit"
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black-950 font-bold py-3 text-lg transition-all hover:scale-105"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Launching Mission...' : 'Launch Mission'}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold py-3 text-lg rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-zwarm-glow"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Launching Mission...' : 'Launch Mission'}
+              </Button>
+            </form>
+          </div>
         </div>
       </main>
     </div>

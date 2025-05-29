@@ -5,11 +5,10 @@ import { useTransition } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button'; //
-import { Textarea } from '@/components/ui/textarea'; //
-import { Label } from '@/components/ui/label'; //
-import { toast } from 'sonner'; //
-import { useRouter } from 'next/navigation'; //
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { getAbsoluteUrl } from '@/utils/site-url';
 
 const commentSchema = z.object({
@@ -24,16 +23,16 @@ interface AddCommentFormProps {
 }
 
 export function AddCommentForm({ missionId, currentUserId }: AddCommentFormProps) {
-  const router = useRouter(); //
-  const [isPending, startTransition] = useTransition(); //
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CommentFormData>({
-    resolver: zodResolver(commentSchema), //
-    defaultValues: { content: "" }, //
+    resolver: zodResolver(commentSchema),
+    defaultValues: { content: "" },
   });
 
   const onSubmit = async (data: CommentFormData) => {
@@ -70,28 +69,32 @@ export function AddCommentForm({ missionId, currentUserId }: AddCommentFormProps
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 my-6 p-4 border border-gray-700 rounded-lg bg-black-800/30">
-      <div>
-        <Label htmlFor="commentContent" className="text-gray-300 font-semibold">Add a comment</Label>
-        <Controller
-          name="content"
-          control={control}
-          render={({ field }) => (
-            <Textarea
-              id="commentContent"
-              {...field}
-              placeholder="Share your thoughts, updates, or questions..."
-              rows={3}
-              className="mt-1 bg-black-900 border-gray-600 text-white placeholder-gray-500 focus:ring-yellow-500 focus:border-yellow-500"
-              disabled={isSubmitting || isPending}
-            />
-          )}
-        />
-        {errors.content && <p className="text-sm text-red-500 mt-1">{errors.content.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          <Controller
+            name="content"
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                {...field}
+                placeholder="Write a comment..."
+                className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl min-h-[100px]"
+                disabled={isSubmitting || isPending}
+              />
+            )}
+          />
+          {errors.content && <p className="text-sm text-red-400 mt-2">{errors.content.message}</p>}
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting || isPending}
+          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-zwarm-glow"
+        >
+          {isPending || isSubmitting ? 'Posting...' : 'Post Comment'}
+        </Button>
       </div>
-      <Button type="submit" disabled={isSubmitting || isPending} className="bg-yellow-500 hover:bg-yellow-600 text-black-950">
-        {isPending || isSubmitting ? 'Posting...' : 'Post Comment'}
-      </Button>
     </form>
   );
 }

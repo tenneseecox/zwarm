@@ -110,89 +110,120 @@ export function EditMissionForm({ mission }: EditMissionFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Title Field */}
       <div>
-        <Label htmlFor="title">Mission Title</Label>
+        <Label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-2">Mission Title</Label>
         <Controller
           name="title"
           control={control}
-          render={({ field }) => <Input id="title" {...field} className="bg-black-800 border-gray-700" />}
+          render={({ field }) => (
+            <Input
+              id="title"
+              {...field}
+              className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
+            />
+          )}
         />
-        {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+        {errors.title && <p className="text-sm text-red-400 mt-2">{errors.title.message}</p>}
       </div>
 
       {/* Description Field */}
       <div>
-        <Label htmlFor="description">Mission Description</Label>
+        <Label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-2">Mission Description</Label>
         <Controller
           name="description"
           control={control}
-          render={({ field }) => <Textarea id="description" {...field} rows={6} className="bg-black-800 border-gray-700" />}
+          render={({ field }) => (
+            <Textarea
+              id="description"
+              {...field}
+              rows={6}
+              className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
+            />
+          )}
         />
-        {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
+        {errors.description && <p className="text-sm text-red-400 mt-2">{errors.description.message}</p>}
       </div>
 
       {/* Emoji Field */}
-       <div>
-        <Label>Mission Emoji</Label>
-        <div className="flex items-center gap-3 mt-1">
+      <div>
+        <Label className="block text-sm font-medium text-gray-300 mb-2">Mission Emoji</Label>
+        <div className="flex items-center gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-2 border-gray-700 hover:bg-gray-800"
+            className="p-3 border-yellow-500/20 hover:bg-yellow-500/10 rounded-xl transition-all duration-300"
           >
             <span className="text-3xl">{selectedEmoji || '🎯'}</span>
           </Button>
           {showEmojiPicker && (
-            <div className="absolute z-20 mt-2 bg-black-900 rounded-lg shadow-xl border border-gray-700">
-              <EmojiPicker onEmojiClick={handleEmojiClick} theme={Theme.DARK} />
+            <div className="absolute z-20 mt-2 bg-black-900 rounded-xl shadow-xl border border-yellow-500/20">
+              <EmojiPicker
+                onEmojiClick={handleEmojiClick}
+                theme={Theme.DARK}
+                lazyLoadEmojis={true}
+                width={320}
+              />
             </div>
           )}
+          <span className="text-gray-400 text-sm">Choose an emoji!</span>
         </div>
-        {errors.emoji && <p className="text-sm text-red-500 mt-1">{errors.emoji.message}</p>}
+        {errors.emoji && <p className="text-sm text-red-400 mt-2">{errors.emoji.message}</p>}
       </div>
 
       {/* Tags Field */}
       <div>
-        <Label htmlFor="tags">Tags</Label>
+        <Label className="block text-sm font-medium text-gray-300 mb-2">Tags</Label>
         <Controller
           name="tags"
           control={control}
           render={({ field }) => (
             <TagInput
-              value={field.value || []}
+              value={field.value}
               onChange={field.onChange}
               placeholder="Type a tag and press Enter..."
-               className="bg-black-800 border-gray-700" // Ensure TagInput accepts className or has its own styling
+              className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
             />
           )}
         />
-        {errors.tags && <p className="text-sm text-red-500 mt-1">{errors.tags.message}</p>}
+        {errors.tags && <p className="text-sm text-red-400 mt-2">{errors.tags.message}</p>}
       </div>
 
-      {/* Optional: Status Field if you want to allow owners to change it */}
+      {/* Status Field */}
       <div>
-        <Label htmlFor="status">Mission Status</Label>
+        <Label className="block text-sm font-medium text-gray-300 mb-2">Mission Status</Label>
         <Controller
-            name="status"
-            control={control}
-            render={({ field }) => (
-                <select {...field} className="w-full p-2 bg-black-800 border-gray-700 rounded-md text-white focus:ring-yellow-500 focus:border-yellow-500">
-                    <option value="OPEN">Open</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="ARCHIVED">Archived</option>
-                </select>
-            )}
+          name="status"
+          control={control}
+          render={({ field }) => (
+            <select
+              {...field}
+              className="w-full p-3 bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl text-white"
+            >
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          )}
         />
-        {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status.message}</p>}
+        {errors.status && <p className="text-sm text-red-400 mt-2">{errors.status.message}</p>}
       </div>
 
+      {errors.root?.serverError && (
+        <div className="p-4 bg-red-900/20 border border-red-500/50 rounded-xl text-red-200">
+          <p className="font-semibold">Error:</p>
+          <p>{errors.root.serverError.message}</p>
+        </div>
+      )}
 
-      {errors.root?.serverError && <p className="text-sm text-red-500 mt-1">{errors.root.serverError.message}</p>}
-      <Button type="submit" disabled={isSubmitting} className="w-full bg-yellow-500 hover:bg-yellow-600 text-black-950 font-bold py-3">
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold py-3 text-lg rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-zwarm-glow"
+      >
         {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
       </Button>
     </form>

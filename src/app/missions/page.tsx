@@ -91,12 +91,15 @@ export default async function MissionsPage() {
       <Header />
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-yellow-400">
-            Explore Active Missions
-          </h1>
+          <div className="flex items-center gap-2">
+            <span className="text-3xl animate-bounce">🎯</span>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+              Explore Active Missions
+            </h1>
+          </div>
           <Link href="/missions/new">
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black-950 font-bold py-2 px-4 rounded-lg transition-colors duration-150 flex items-center gap-2 text-sm sm:text-base">
-              🚀
+            <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold py-2 px-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-zwarm-glow hover:shadow-zwarm-glow-lg flex items-center gap-2 text-sm sm:text-base group">
+              <span className="transform group-hover:rotate-12 transition-transform duration-300">🚀</span>
               <span className="hidden sm:inline">Launch New Mission</span>
               <span className="sm:hidden">New Mission</span>
             </Button>
@@ -104,14 +107,17 @@ export default async function MissionsPage() {
         </div>
 
         {missions.length === 0 ? (
-          <div className="text-center text-gray-400 py-10 glass-dark rounded-zwarm">
-            <p className="text-xl mb-2">No active missions found.</p>
-            <p>Why not be the first to <Link href="/missions/new" className="text-yellow-400 hover:text-yellow-300 underline">launch one</Link>?</p>
+          <div className="text-center text-gray-400 py-10 glass-dark rounded-zwarm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-yellow-500/5 rounded-full blur-3xl"></div>
+            </div>
+            <p className="text-xl mb-2 relative z-10">No active missions found.</p>
+            <p className="relative z-10">Why not be the first to <Link href="/missions/new" className="text-yellow-400 hover:text-yellow-300 underline transition-colors duration-300">launch one</Link>?</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {missions.map((mission) => (
-              // The mission object from getMissions() now directly matches MissionCardType
               <MissionCard key={mission.id} {...mission} />
             ))}
           </div>

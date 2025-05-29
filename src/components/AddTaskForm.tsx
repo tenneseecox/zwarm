@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { Input } from '@/components/ui/input';
 
 const taskSchema = z.object({
   text: z.string().min(1, "Task description cannot be empty.").max(500, "Task is too long."),
@@ -75,49 +76,54 @@ export function AddTaskForm({ missionId }: AddTaskFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mb-6 p-4 border border-gray-700 rounded-lg bg-black-800/30">
-      <div className="flex items-start gap-4">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="text-2xl p-2 hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            {selectedEmoji}
-          </button>
-          {showEmojiPicker && (
-            <div className="absolute z-10 mt-2">
-              <EmojiPicker 
-                onEmojiClick={handleEmojiClick}
-                theme={Theme.DARK}
-                width={350}
-                height={400}
-              />
-            </div>
-          )}
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="flex items-start gap-3">
         <div className="flex-1">
-          <Label htmlFor="taskText" className="text-gray-300 font-semibold">Add New Task</Label>
           <Controller
             name="text"
             control={control}
             render={({ field }) => (
-              <Textarea
-                id="taskText"
+              <Input
                 {...field}
-                placeholder="Describe the task..."
-                rows={3}
-                className="mt-1 bg-black-900 border-gray-600 text-white placeholder-gray-500 focus:ring-yellow-500 focus:border-yellow-500"
+                placeholder="Add a new task..."
+                className="bg-black-800/50 border-yellow-500/20 focus:border-yellow-500/40 focus:ring-yellow-500/20 rounded-xl"
                 disabled={isSubmitting || isPending}
               />
             )}
           />
-          {errors.text && <p className="text-sm text-red-500 mt-1">{errors.text.message}</p>}
+          {errors.text && <p className="text-sm text-red-400 mt-2">{errors.text.message}</p>}
         </div>
+
+        <div className="relative">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="p-3 border-yellow-500/20 hover:bg-yellow-500/10 rounded-xl transition-all duration-300"
+            disabled={isSubmitting || isPending}
+          >
+            <span className="text-2xl">{selectedEmoji || '📝'}</span>
+          </Button>
+          {showEmojiPicker && (
+            <div className="absolute z-20 mt-2 bg-black-900 rounded-xl shadow-xl border border-yellow-500/20">
+              <EmojiPicker
+                onEmojiClick={handleEmojiClick}
+                theme={Theme.DARK}
+                lazyLoadEmojis={true}
+                width={320}
+              />
+            </div>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting || isPending}
+          className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-zwarm-glow"
+        >
+          {isPending || isSubmitting ? 'Adding...' : 'Add Task'}
+        </Button>
       </div>
-      <Button type="submit" disabled={isSubmitting || isPending} className="bg-yellow-500 hover:bg-yellow-600 text-black-950">
-        {isPending || isSubmitting ? 'Adding Task...' : 'Add Task'}
-      </Button>
     </form>
   );
 }

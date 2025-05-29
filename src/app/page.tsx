@@ -79,37 +79,43 @@ export default async function Home() {
       
       <main className="relative z-10 px-4">
         {/* Hero Section */}
-        <section className="mt-16 mb-10 text-center max-w-3xl mx-auto">
-          <div className="glass-dark rounded-2xl p-12 relative overflow-hidden animate-fadeInUp">
+        <section className="mt-16 mb-12 text-center max-w-3xl mx-auto">
+          <div className="glass-dark rounded-2xl p-12 relative overflow-hidden border border-yellow-500/10 hover:border-yellow-500/20 transition-all duration-300">
+            {/* Decorative Elements */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl"></div>
+            </div>
+            
             {/* Bee Icon */}
-            <div className="text-4xl bg-yellow-500 rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-zwarm-glow border-2 border-yellow-100 animate-bounce flex items-center justify-center text-black font-black">
+            <div className="text-4xl bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-6 shadow-zwarm-glow border-2 border-yellow-100 transform hover:scale-105 transition-transform duration-300 flex items-center justify-center text-black font-black relative z-10">
               🐝
             </div>
             
             {/* Hero Title */}
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-white leading-tight">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-6 text-white leading-tight relative z-10">
               Swarm the Internet.<br />
-              Build <span className="text-yellow-400 text-glow-yellow">Missions</span> Together.
+              Build <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">Missions</span> Together.
             </h1>
             
             {/* Hero Description */}
-            <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed relative z-10">
               Zwarm is where internet strangers unite to create, build, and solve together.<br />
               <span className="text-white font-bold">Pick a mission. Join the swarm. Make an impact.</span>
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
               <Button 
                 size="lg" 
-                className="bg-blue-400 hover:bg-blue-300 text-white font-bold px-8 py-4 rounded-zwarm transition-all hover:scale-105"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 shadow-zwarm-glow hover:shadow-zwarm-glow-lg"
               >
                 View a Mission
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black font-bold px-8 py-4 rounded-zwarm transition-all hover:scale-105"
+                className="border-2 border-yellow-500 text-yellow-400 hover:bg-yellow-500/10 font-bold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:border-yellow-400"
               >
                 See Trending
               </Button>
@@ -119,7 +125,15 @@ export default async function Home() {
 
         {/* Trending Missions */}
         <section className="max-w-6xl mx-auto mb-16">
-          <h2 className="text-2xl font-bold mb-6 text-white">🔥 Trending Missions</h2>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl animate-pulse">🔥</span>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+                Trending Missions
+              </h2>
+            </div>
+            <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {transformedMissions.map((mission) => (
               <MissionCard

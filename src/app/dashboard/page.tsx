@@ -96,19 +96,19 @@ export default async function DashboardPage() {
       <SwarmBackground />
       <Header />
       <main className="relative z-10 container mx-auto px-4 py-12 md:py-16">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-yellow-400">
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
             Your Dashboard
           </h1>
-           <Link href="/missions/new">
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black-950 font-bold py-2 px-4 rounded-lg">
+          <Link href="/missions/new">
+            <Button className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black-950 font-bold px-6 py-3 rounded-2xl transition-all duration-300 hover:scale-105 shadow-zwarm-glow">
               🚀 Launch New Mission
             </Button>
           </Link>
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+          <div className="mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-2xl text-red-200">
             <p className="font-semibold">Error loading missions:</p>
             <p>{error}</p>
           </div>
@@ -116,13 +116,20 @@ export default async function DashboardPage() {
 
         {/* Missions You Own */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-white mb-6 border-b-2 border-yellow-400 pb-2">
-            Missions You Own ({ownedMissions.length})
-          </h2>
+          <div className="flex items-center gap-3 mb-8">
+            <h2 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+              Missions You Own ({ownedMissions.length})
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
+          </div>
           {ownedMissions.length === 0 ? (
-            <div className="text-center text-gray-400 py-6 glass-dark rounded-zwarm">
-              <p className="text-lg">You haven&apos;t created any missions yet.</p>
-              <Link href="/missions/new" className="text-yellow-400 hover:text-yellow-300 underline mt-2 inline-block">
+            <div className="glass-dark rounded-2xl p-8 text-center border border-yellow-500/10">
+              <p className="text-lg text-gray-300 mb-4">You haven&apos;t created any missions yet.</p>
+              <Link 
+                href="/missions/new" 
+                className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
+              >
+                <span className="text-xl">🚀</span>
                 Launch your first mission!
               </Link>
             </div>
@@ -137,13 +144,20 @@ export default async function DashboardPage() {
 
         {/* Missions You've Joined */}
         <section>
-          <h2 className="text-2xl font-semibold text-white mb-6 border-b-2 border-yellow-400 pb-2">
-            Missions You&apos;ve Joined ({joinedMissions.length})
-          </h2>
+          <div className="flex items-center gap-3 mb-8">
+            <h2 className="text-2xl font-semibold bg-gradient-to-r from-yellow-400 to-yellow-500 bg-clip-text text-transparent">
+              Missions You&apos;ve Joined ({joinedMissions.length})
+            </h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
+          </div>
           {joinedMissions.length === 0 ? (
-            <div className="text-center text-gray-400 py-6 glass-dark rounded-zwarm">
-              <p className="text-lg">You haven&apos;t joined any missions yet.</p>
-              <Link href="/missions" className="text-yellow-400 hover:text-yellow-300 underline mt-2 inline-block">
+            <div className="glass-dark rounded-2xl p-8 text-center border border-yellow-500/10">
+              <p className="text-lg text-gray-300 mb-4">You haven&apos;t joined any missions yet.</p>
+              <Link 
+                href="/missions" 
+                className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
+              >
+                <span className="text-xl">🔍</span>
                 Explore missions to join!
               </Link>
             </div>
